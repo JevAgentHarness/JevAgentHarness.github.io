@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Page not found · JevAgentHarness</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Newsreader:opsz,wght@6..72,500&display=swap">
+<style>
+/* Same tokens as the homepage; everything inline so the page works at any missing path. */
+:root{
+  --bg:#F6F6FB; --surface:#FFFFFF; --ink:#14152E; --ink-2:#464967; --muted:#686C8B; --line:#E2E1EE; --accent:#5338D6;
+  --brand-v:#7C5CFF; --brand-t:#14B8A6; --brand-a:#F5A524;
+  --f-display:"Newsreader", "Iowan Old Style", Georgia, serif; --f-body:"Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){ --bg:#0B0C19; --surface:#14162B; --ink:#ECEDF9; --ink-2:#BDC0DA; --muted:#9296B5; --line:#2A2D4B; --accent:#AE9BFF; color-scheme:dark; }
+}
+:root[data-theme="dark"]{ --bg:#0B0C19; --surface:#14162B; --ink:#ECEDF9; --ink-2:#BDC0DA; --muted:#9296B5; --line:#2A2D4B; --accent:#AE9BFF; color-scheme:dark; }
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0; background:var(--bg); color:var(--ink); font:400 16px/1.6 var(--f-body); display:grid; place-items:center;
+  padding-left:max(16px, env(safe-area-inset-left, 0px)); padding-right:max(16px, env(safe-area-inset-right, 0px)); padding-block:32px}
+main{max-width:520px; display:grid; gap:14px; justify-items:start}
+svg{width:72px; height:auto}
+.code{font:600 12px/1 var(--f-body); letter-spacing:.12em; text-transform:uppercase; color:var(--muted)}
+h1{margin:0; font:500 clamp(32px, 6vw, 44px)/1.1 var(--f-display); letter-spacing:-.015em}
+p{margin:0; color:var(--ink-2)}
+a.btn{display:inline-flex; align-items:center; gap:8px; height:40px; padding:0 16px; border-radius:999px; background:var(--ink); color:var(--bg); text-decoration:none; font-weight:500; margin-top:6px}
+a.btn:focus-visible{outline:2px solid var(--accent); outline-offset:3px}
+</style>
+</head>
+<body>
+<main>
+  <svg viewBox="180 220 640 590" aria-hidden="true">
+    <path d="M368 512 C434 436 486 332 568 332 L772 332" stroke="var(--brand-v)" fill="none" stroke-width="66" stroke-linecap="round"/>
+    <path d="M686 242 L776 332 L686 422" stroke="var(--brand-v)" fill="none" stroke-width="66" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M368 512 C434 588 486 692 568 692 L772 692" stroke="var(--brand-t)" fill="none" stroke-width="66" stroke-linecap="round"/>
+    <path d="M686 602 L776 692 L686 782" stroke="var(--brand-t)" fill="none" stroke-width="66" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M200 512 L368 512" stroke="var(--brand-a)" fill="none" stroke-width="66" stroke-linecap="round"/>
+    <circle cx="368" cy="512" r="84" fill="var(--brand-a)"/>
+  </svg>
+  <span class="code">Error 404</span>
+  <h1>This page took a wrong turn</h1>
+  <p>The page you asked for does not exist. The paper, code, models, data and results are on the JevAgentHarness homepage.</p>
+  <a class="btn" id="home" href="./">Go to the homepage</a>
+</main>
+<script>
+try{ var t=localStorage.getItem("jah-theme"); if(t==="light"||t==="dark") document.documentElement.setAttribute("data-theme",t); }catch(e){}
+if(/^https?:$/.test(location.protocol)) document.getElementById("home").href=location.origin+"/";
+</script>
+</body>
+</html>

@@ -1,0 +1,1656 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>JevAgentHarness</title>
+<meta name="description" content="JevAgentHarness: benchmarking, deploying and training decision models that share control with LLMs. Paper, code, models, data and interactive results.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="JevAgentHarness">
+<meta property="og:description" content="Benchmarking, deploying and training decision models that share control with LLMs.">
+<meta property="og:url" content="https://jevagentharness.github.io/">
+<meta property="og:image" content="https://jevagentharness.github.io/assets/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="assets/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&display=swap">
+<style>
+/* Layout: one 1120px reading column with framed figure panels, like a paper's companion; a sticky section bar;
+   the hero pairs the title with the paper's idea drawn as two lanes leaving one decision gate. */
+:root{
+  --bg:#F6F6FB; --surface:#FFFFFF; --surface-2:#F0EFF8; --paper:#FFFFFF;
+  --ink:#14152E; --ink-2:#464967; --muted:#686C8B; --line:#E2E1EE; --grid:#ECEBF4; --axis:#C9C8D9;
+  --accent:#5338D6; --accent-ink:#FFFFFF;
+  --violet:#6D4CF6; --teal:#0F9488; --amber:#D97706;
+  --brand-v:#7C5CFF; --brand-t:#14B8A6; --brand-a:#F5A524;
+  --lv1:#8EA4D6; --lv2:#4F6DB8; --lv3:#1F3C85;
+  --pos:#0F9488; --neg:#D14343; --mid:#EDEDF3;
+  --good:#0CA30C; --warn:#FAB219; --bad:#D03B3B;
+  --good-ink:#0B6B0B; --bad-ink:#B02A2A;
+  --code-bg:#11132A; --code-ink:#E7E8F6; --code-muted:#9CA0C4; --code-line:#262948;
+  --shadow:0 1px 2px rgba(20,21,46,.05), 0 12px 32px -16px rgba(20,21,46,.18);
+  --f-display:"Newsreader", "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+  --f-body:"Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --f-mono:"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --r:14px; --nav-h:56px;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0B0C19; --surface:#14162B; --surface-2:#1B1D37; --paper:#FFFFFF;
+    --ink:#ECEDF9; --ink-2:#BDC0DA; --muted:#9296B5; --line:#2A2D4B; --grid:#23264A; --axis:#3A3E62;
+    --accent:#AE9BFF; --accent-ink:#14152E;
+    --violet:#8466F5; --teal:#0F9F8E; --amber:#C27C0E;
+    --lv1:#3C5596; --lv2:#6684D6; --lv3:#AFC2F2;
+    --pos:#0F9F8E; --neg:#E06060; --mid:#2A2D45;
+    --good-ink:#3FCB3F; --bad-ink:#FF8A8A;
+    --code-bg:#080915; --code-ink:#E7E8F6; --code-muted:#9CA0C4; --code-line:#23264A;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 12px 32px -16px rgba(0,0,0,.6);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0B0C19; --surface:#14162B; --surface-2:#1B1D37; --paper:#FFFFFF;
+  --ink:#ECEDF9; --ink-2:#BDC0DA; --muted:#9296B5; --line:#2A2D4B; --grid:#23264A; --axis:#3A3E62;
+  --accent:#AE9BFF; --accent-ink:#14152E;
+  --violet:#8466F5; --teal:#0F9F8E; --amber:#C27C0E;
+  --lv1:#3C5596; --lv2:#6684D6; --lv3:#AFC2F2;
+  --pos:#0F9F8E; --neg:#E06060; --mid:#2A2D45;
+  --good-ink:#3FCB3F; --bad-ink:#FF8A8A;
+  --code-bg:#080915; --code-ink:#E7E8F6; --code-muted:#9CA0C4; --code-line:#23264A;
+  --shadow:0 1px 2px rgba(0,0,0,.3), 0 12px 32px -16px rgba(0,0,0,.6);
+  color-scheme:dark;
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth; scroll-padding-top:calc(var(--nav-h) + 16px); -webkit-text-size-adjust:100%}
+body{margin:0; background:var(--bg); color:var(--ink); font:400 16px/1.6 var(--f-body); font-feature-settings:"cv11","ss01"; overflow-x:hidden}
+img{max-width:100%; height:auto; display:block}
+a{color:var(--accent); text-decoration-thickness:1px; text-underline-offset:3px}
+a:hover{text-decoration-thickness:2px}
+:focus-visible{outline:2px solid var(--accent); outline-offset:2px; border-radius:6px}
+[hidden]{display:none!important}
+code,kbd,pre{font-family:var(--f-mono)}
+p code, li code, td code{font-size:.88em; background:var(--surface-2); border:1px solid var(--line); padding:.05em .35em; border-radius:6px}
+.wrap{max-width:1120px; margin:0 auto; padding-left:max(16px, env(safe-area-inset-left, 0px)); padding-right:max(16px, env(safe-area-inset-right, 0px))}
+.sr-only{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap}
+
+/* ---------- nav ---------- */
+.nav{position:sticky; top:env(safe-area-inset-top, 0px); z-index:50; background:color-mix(in oklab, var(--bg) 82%, transparent); backdrop-filter:saturate(1.4) blur(12px); -webkit-backdrop-filter:saturate(1.4) blur(12px); border-bottom:1px solid color-mix(in oklab, var(--line) 70%, transparent)}
+.nav .wrap{display:flex; align-items:center; gap:16px; height:var(--nav-h)}
+.brand{display:flex; align-items:center; gap:10px; color:var(--ink); text-decoration:none; font-weight:650; letter-spacing:-.01em; flex:none}
+.brand img{width:28px; height:28px}
+.nav-links{display:flex; gap:2px; margin-left:auto; overflow-x:auto; scrollbar-width:none; min-width:0}
+.nav-links::-webkit-scrollbar{display:none}
+.nav-links a{color:var(--ink-2); text-decoration:none; font-size:14px; font-weight:500; padding:6px 10px; border-radius:999px; white-space:nowrap}
+.nav-links a:hover{color:var(--ink); background:var(--surface-2)}
+.nav-links a[aria-current="true"]{color:var(--ink); background:var(--surface-2); box-shadow:inset 0 0 0 1px var(--line)}
+.theme-btn{flex:none; width:36px; height:36px; display:grid; place-items:center; border-radius:999px; border:1px solid var(--line); background:var(--surface); color:var(--ink); cursor:pointer}
+.theme-btn svg{width:18px; height:18px}
+.theme-btn .moon{display:none}
+:root[data-theme="dark"] .theme-btn .sun{display:none}
+:root[data-theme="dark"] .theme-btn .moon{display:block}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .theme-btn .sun{display:none} :root:not([data-theme="light"]) .theme-btn .moon{display:block} }
+
+/* ---------- hero ---------- */
+.hero{position:relative; padding-block:56px 40px; overflow:hidden}
+.hero::before{content:""; position:absolute; inset:-20% -10% auto auto; width:70%; height:120%; background:
+  radial-gradient(closest-side, color-mix(in oklab, var(--brand-v) 14%, transparent), transparent 70%),
+  radial-gradient(closest-side at 30% 75%, color-mix(in oklab, var(--brand-t) 10%, transparent), transparent 70%);
+  pointer-events:none; z-index:0}
+.hero .wrap{position:relative; z-index:1; display:grid; grid-template-columns:minmax(0,1.5fr) minmax(0,1fr); gap:32px; align-items:center}
+.eyebrow{font:600 12px/1.2 var(--f-body); letter-spacing:.12em; text-transform:uppercase; color:var(--muted)}
+.hero h1{margin:14px 0 0; font-weight:400}
+.t-name{display:flex; align-items:center; gap:14px; font:600 clamp(40px, 6.4vw, 66px)/1 var(--f-display); letter-spacing:-.02em; color:var(--ink)}
+.t-name img{width:clamp(44px, 6vw, 62px); height:auto}
+.t-sub{display:block; margin-top:14px; font:400 clamp(21px, 2.6vw, 28px)/1.25 var(--f-display); color:var(--ink-2); text-wrap:balance; max-width:30ch}
+.authors{margin:26px 0 0; font-size:16px; line-height:1.7; color:var(--ink)}
+.authors span{white-space:nowrap}
+.authors sup, .affil sup{font-size:.7em; color:var(--muted); margin-left:1px}
+.affil{margin:4px 0 0; font-size:14px; color:var(--ink-2); display:flex; flex-wrap:wrap; gap:4px 16px}
+.btns{display:flex; flex-wrap:wrap; gap:8px; margin-top:26px}
+.btn{display:inline-flex; align-items:center; gap:7px; height:40px; padding:0 14px; border-radius:999px; border:1px solid var(--line); background:var(--surface); color:var(--ink); font:500 14.5px/1 var(--f-body); text-decoration:none; box-shadow:0 1px 1px rgba(20,21,46,.04); transition:transform .15s ease, border-color .15s ease}
+.btn svg{width:17px; height:17px; flex:none}
+.btn:hover{border-color:color-mix(in oklab, var(--accent) 45%, var(--line)); transform:translateY(-1px)}
+.btn.primary{background:var(--ink); color:var(--bg); border-color:var(--ink)}
+.btn[aria-disabled="true"]{opacity:.55; border-style:dashed; cursor:not-allowed; transform:none}
+.btn .soon{font-size:11px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:var(--muted)}
+.sublinks{margin-top:16px; font-size:13.5px; color:var(--muted); display:grid; gap:4px}
+.sublinks b{font-weight:600; color:var(--ink-2); margin-right:6px}
+.sublinks a{color:var(--ink-2); text-decoration:none; border-bottom:1px solid var(--line)}
+.sublinks a:hover{color:var(--accent); border-color:var(--accent)}
+.sublinks .dot{margin:0 6px; color:var(--axis)}
+.lanes{width:100%; max-width:540px; justify-self:end}
+.lanes svg{width:100%; height:auto; overflow:visible}
+.lanes .lbl{font:600 15.5px var(--f-body); fill:var(--ink)}
+.lanes .lbl-s{font:400 14px var(--f-body); fill:var(--ink-2)}
+.lanes .static-dot{display:none}
+@media (prefers-reduced-motion: reduce){ .lanes .flow-dot{display:none} .lanes .static-dot{display:inline} }
+@keyframes rise{from{opacity:0; transform:translateY(10px)} to{opacity:1; transform:none}}
+.hero .rise{animation:rise .7s cubic-bezier(.2,.7,.2,1) both}
+.hero .rise:nth-child(2){animation-delay:.06s}.hero .rise:nth-child(3){animation-delay:.12s}.hero .rise:nth-child(4){animation-delay:.18s}.hero .rise:nth-child(5){animation-delay:.24s}.hero .rise:nth-child(6){animation-delay:.3s}
+@media (prefers-reduced-motion: reduce){ .hero .rise{animation:none} html{scroll-behavior:auto} }
+
+/* ---------- sections ---------- */
+section{padding-block:64px}
+section + section{border-top:1px solid var(--line)}
+.sec-head{display:grid; gap:10px; margin-bottom:28px; max-width:760px}
+.sec-head h2{margin:0; font:500 clamp(30px, 3.6vw, 42px)/1.1 var(--f-display); letter-spacing:-.015em; text-wrap:balance}
+.sec-head p{margin:0; color:var(--ink-2); font-size:17px}
+h3{font:600 20px/1.3 var(--f-body); letter-spacing:-.01em; margin:0}
+.prose{max-width:68ch}
+.prose p{margin:0 0 14px}
+.lead{font-size:18px; line-height:1.65; color:var(--ink)}
+
+/* overview */
+.tldr{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.05fr); gap:36px; align-items:start}
+.kpis{display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:12px; margin-top:22px}
+.kpi{background:var(--surface); border:1px solid var(--line); border-radius:var(--r); padding:16px 16px 14px; display:grid; gap:6px; align-content:start}
+.kpi .v{font:600 30px/1.05 var(--f-body); letter-spacing:-.02em; color:var(--ink)}
+.kpi .v small{font-size:15px; font-weight:500; color:var(--ink-2); letter-spacing:0}
+.kpi .k{font-size:13.5px; line-height:1.45; color:var(--ink-2)}
+.kpi .tag{justify-self:start; font:600 11px/1 var(--f-body); letter-spacing:.08em; text-transform:uppercase; color:var(--muted)}
+.paperfig{margin:0; background:var(--surface); border:1px solid var(--line); border-radius:var(--r); padding:14px; box-shadow:var(--shadow)}
+.paperfig .pf-img{background:var(--paper); border-radius:10px; padding:10px}
+.paperfig figcaption{padding:12px 4px 2px; font-size:14px; line-height:1.55; color:var(--ink-2)}
+.paperfig figcaption b{color:var(--ink); font-weight:600}
+.paperfig .credit{display:block; margin-top:4px; font-size:12px; color:var(--muted)}
+.abs-grid{display:grid; grid-template-columns:minmax(0,200px) minmax(0,1fr); gap:24px}
+.abstract a{overflow-wrap:anywhere}
+.abstract{min-width:0; max-width:70ch; font:400 19px/1.7 var(--f-display); color:var(--ink)}
+.abstract p{margin:0}
+
+/* parts */
+.parts{display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:16px}
+.part{background:var(--surface); border:1px solid var(--line); border-radius:var(--r); padding:22px; display:grid; gap:12px; align-content:start}
+.part .ico{width:40px; height:40px; border-radius:12px; display:grid; place-items:center; background:var(--surface-2); color:var(--accent)}
+.part .ico svg{width:22px; height:22px}
+.part .role{font:600 12px/1 var(--f-body); letter-spacing:.1em; text-transform:uppercase; color:var(--muted)}
+.part h3{font:500 25px/1.15 var(--f-display); letter-spacing:-.01em}
+.part p{margin:0; color:var(--ink-2); font-size:15px}
+.levels{display:grid; gap:8px; margin:4px 0 0; padding:0; list-style:none}
+.levels li{display:grid; grid-template-columns:auto 1fr; gap:10px; align-items:start; font-size:14px; color:var(--ink-2)}
+.lv{display:inline-grid; place-items:center; min-width:30px; height:22px; padding:0 6px; border-radius:6px; font:600 12px/1 var(--f-mono); color:#fff}
+.lv1{background:var(--lv1)} .lv2{background:var(--lv2)} .lv3{background:var(--lv3)}
+:root[data-theme="dark"] .lv3{color:#14152E}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .lv3{color:#14152E} }
+.levels b{color:var(--ink); font-weight:600}
+.chips{display:flex; flex-wrap:wrap; gap:6px}
+.chip{font:500 12.5px/1 var(--f-body); padding:6px 9px; border-radius:999px; background:var(--surface-2); color:var(--ink-2); border:1px solid var(--line)}
+.part .more{font-size:14px; font-weight:500}
+.flow{list-style:none; margin:2px 0 0; padding:0; display:grid; gap:0}
+.flow li{position:relative; padding:0 0 12px 22px; font-size:14px; color:var(--ink-2)}
+.flow li b{color:var(--ink); font-weight:600}
+.flow li::before{content:""; position:absolute; left:4px; top:7px; width:8px; height:8px; border-radius:50%; background:var(--surface); border:2px solid var(--violet)}
+.flow li::after{content:""; position:absolute; left:8px; top:19px; bottom:0; width:2px; background:color-mix(in oklab, var(--violet) 30%, var(--line))}
+.flow li:last-child{padding-bottom:0}
+.flow li:last-child::after{display:none}
+.flow li:last-child::before{background:var(--violet)}
+.wide-fig{margin-top:22px}
+.proxy{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:12px 40px; align-items:start; margin-top:44px}
+.proxy .full{grid-column:1/-1; margin-top:14px}
+.steps{margin:14px 0 0; padding-left:20px; color:var(--ink-2); font-size:15px; display:grid; gap:6px}
+.steps li::marker{color:var(--muted); font-weight:600}
+
+/* ---------- results / charts ---------- */
+.res-block{margin-top:48px}
+.res-block:first-of-type{margin-top:0}
+.res-title{display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; margin-bottom:14px}
+.res-title .eyebrow{flex:none}
+.card{background:var(--surface); border:1px solid var(--line); border-radius:var(--r); padding:22px 22px 16px; box-shadow:var(--shadow)}
+figure.card{margin:0}
+.card + .card{margin-top:16px}
+.card-h{display:grid; gap:6px; margin-bottom:14px; max-width:820px}
+.card-h h4{margin:0; font:600 18px/1.35 var(--f-body); letter-spacing:-.01em; text-wrap:balance}
+.card-h p{margin:0; font-size:14.5px; color:var(--ink-2)}
+.controls{display:flex; flex-wrap:wrap; gap:10px 18px; align-items:center; margin-bottom:12px}
+.ctl{display:flex; align-items:center; gap:8px; flex-wrap:wrap}
+.ctl-l{font:600 11.5px/1 var(--f-body); letter-spacing:.08em; text-transform:uppercase; color:var(--muted)}
+.seg{display:inline-flex; flex-wrap:wrap; padding:3px; gap:2px; border-radius:10px; background:var(--surface-2); border:1px solid var(--line)}
+.seg button{font:500 13px/1 var(--f-body); color:var(--ink-2); background:transparent; border:0; padding:7px 11px; border-radius:7px; cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--surface); color:var(--ink); box-shadow:0 1px 2px rgba(20,21,46,.12), inset 0 0 0 1px var(--line)}
+.seg button:hover{color:var(--ink)}
+.tog{font:500 13px/1 var(--f-body); color:var(--ink-2); background:var(--surface); border:1px solid var(--line); padding:7px 11px 7px 9px; border-radius:999px; cursor:pointer; display:inline-flex; gap:7px; align-items:center}
+.tog::before{content:""; width:12px; height:12px; border-radius:4px; border:1.5px solid var(--axis); background:var(--surface)}
+.tog[aria-pressed="true"]{color:var(--ink); border-color:color-mix(in oklab, var(--accent) 40%, var(--line))}
+.tog[aria-pressed="true"]::before{background:var(--accent); border-color:var(--accent); box-shadow:inset 0 0 0 2px var(--surface)}
+.legend{display:flex; flex-wrap:wrap; gap:6px 18px; font-size:13px; color:var(--ink-2); margin:2px 0 10px}
+.legend .it{display:inline-flex; align-items:center; gap:7px}
+.legend svg{flex:none; overflow:visible}
+.src{margin-top:12px; padding-top:10px; border-top:1px solid var(--line); font-size:12.5px; color:var(--muted); display:flex; flex-wrap:wrap; gap:4px 14px; justify-content:space-between}
+.src a{color:var(--ink-2)}
+.src code{font-size:11.5px}
+.chart{position:relative; width:100%}
+.chart svg{display:block; overflow:visible}
+.chart text{font-family:var(--f-body)}
+.ax text, .ax-t{font:400 11.5px var(--f-body); fill:var(--muted); font-variant-numeric:tabular-nums}
+.ax-title{font:500 12px var(--f-body); fill:var(--ink-2)}
+.dlabel{font:500 12px var(--f-body); fill:var(--ink); paint-order:stroke; stroke:var(--surface); stroke-width:3.5px; stroke-linejoin:round}
+.dlabel.ours{font-weight:650}
+.dlabel.muted{fill:var(--ink-2)}
+details.numbers{margin-top:12px}
+details.numbers summary{cursor:pointer; font-size:13.5px; font-weight:500; color:var(--ink-2); list-style:none; display:inline-flex; gap:6px; align-items:center}
+details.numbers summary::-webkit-details-marker{display:none}
+details.numbers summary::before{content:"+"; display:inline-grid; place-items:center; width:18px; height:18px; border-radius:5px; border:1px solid var(--line); font:600 13px/1 var(--f-mono); color:var(--muted)}
+details.numbers[open] summary::before{content:"\2212"}
+.tbl-wrap{overflow-x:auto; margin-top:10px; border:1px solid var(--line); border-radius:10px; -webkit-overflow-scrolling:touch}
+table.tbl{border-collapse:collapse; width:100%; font-size:13.5px}
+.tbl td.n{font-variant-numeric:tabular-nums}
+.tbl th, .tbl td{padding:8px 10px; text-align:right; border-bottom:1px solid var(--line); white-space:nowrap}
+.tbl th:first-child, .tbl td:first-child{text-align:left; white-space:normal; min-width:180px}
+.tbl td .kind{margin-left:0}
+#lbt th:nth-child(2), #lbt td:nth-child(2){text-align:left}
+.tbl thead th{position:sticky; top:0; background:var(--surface-2); font-weight:600; color:var(--ink-2); font-size:12.5px; vertical-align:bottom}
+.tbl tbody tr:hover td{background:color-mix(in oklab, var(--surface-2) 70%, transparent)}
+.tbl tbody tr:last-child td{border-bottom:0}
+.tbl td.na{color:var(--axis)}
+.tbl tr.ours td{background:color-mix(in oklab, var(--violet) 7%, var(--surface))}
+.tbl th button{all:unset; cursor:pointer; display:inline-flex; gap:4px; align-items:center}
+.tbl th button:focus-visible{outline:2px solid var(--accent); outline-offset:2px; border-radius:4px}
+.tbl th[aria-sort] button::after{content:"\2195"; color:var(--axis); font-size:11px}
+.tbl th[aria-sort="descending"] button::after{content:"\2193"; color:var(--accent)}
+.tbl th[aria-sort="ascending"] button::after{content:"\2191"; color:var(--accent)}
+.kind{display:inline-block; font:600 10.5px/1 var(--f-body); letter-spacing:.05em; text-transform:uppercase; padding:4px 6px; border-radius:5px; background:var(--surface-2); color:var(--muted); border:1px solid var(--line); margin-left:6px; vertical-align:1px}
+.kind.ours{background:color-mix(in oklab, var(--violet) 14%, var(--surface)); color:var(--accent); border-color:color-mix(in oklab, var(--violet) 30%, var(--line))}
+
+/* row charts (HTML rows + SVG tracks) */
+.rows{display:grid}
+.row{display:grid; grid-template-columns:minmax(120px, 230px) minmax(0,1fr) 52px; align-items:center; gap:12px; padding:3px 6px; border-radius:8px; min-height:30px}
+.row.hdr{min-height:0; padding-bottom:2px}
+.row .nm{font-size:13.5px; line-height:1.25; color:var(--ink); min-width:0}
+.row .nm .kind{margin-left:4px}
+.row.ours{background:color-mix(in oklab, var(--violet) 7%, transparent)}
+.row.ours .nm{font-weight:600}
+.row:not(.hdr):hover, .row.hl{background:color-mix(in oklab, var(--surface-2) 90%, transparent)}
+.row.ours:hover{background:color-mix(in oklab, var(--violet) 12%, transparent)}
+.row .val{font:600 13px/1 var(--f-body); text-align:right; font-variant-numeric:tabular-nums; color:var(--ink)}
+.row .val.na{color:var(--axis); font-weight:400}
+.row svg{width:100%; height:24px; overflow:visible}
+.note{font-size:13px; color:var(--ink-2); margin:10px 0 0}
+.note b{color:var(--ink)}
+
+/* module map */
+.mm{display:grid; grid-template-columns:minmax(92px, 150px) repeat(5, minmax(0,1fr)); gap:5px}
+.mm .mh{font:600 12.5px/1.2 var(--f-body); color:var(--ink); text-align:center; padding:2px 2px 6px}
+.mm .mh small{display:block; font-weight:400; color:var(--muted); font-size:11.5px; margin-top:3px}
+.mm .rl{font-size:13px; font-weight:500; color:var(--ink); display:flex; flex-direction:column; justify-content:center; line-height:1.2; padding-right:4px}
+.mm .rl small{color:var(--muted); font-weight:400; font-size:11.5px}
+.mm-cell{position:relative; appearance:none; border:1px solid var(--line); border-radius:9px; min-height:54px; padding:6px 4px; display:grid; place-content:center; text-align:center; gap:2px; color:var(--ink); font-variant-numeric:tabular-nums; cursor:default; background:var(--surface)}
+.mm-cell:hover, .mm-cell:focus-visible{border-color:var(--ink-2)}
+.mm-cell .d{font:600 14px/1.1 var(--f-body)}
+.mm-cell .s{font:400 12px/1.1 var(--f-body); color:var(--ink-2)}
+.mm-cell .ic{position:absolute; top:4px; right:4px; width:13px; height:13px}
+.mm-cell.v1{background:color-mix(in oklab, var(--good) 17%, var(--surface)); border-color:color-mix(in oklab, var(--good) 35%, var(--line))}
+.mm-cell.v2, .mm-cell.v3{background:color-mix(in oklab, var(--warn) 17%, var(--surface)); border-color:color-mix(in oklab, var(--warn) 40%, var(--line))}
+.mm-cell.v4{background:color-mix(in oklab, var(--bad) 15%, var(--surface)); border-color:color-mix(in oklab, var(--bad) 35%, var(--line))}
+.mm-sep{grid-column:1/-1; height:4px}
+.scale{display:inline-flex; align-items:center; gap:8px; font-size:12px; color:var(--muted); font-variant-numeric:tabular-nums}
+.scale i{display:block; width:150px; height:10px; border-radius:5px}
+.sw{display:inline-block; width:14px; height:14px; border-radius:4px; vertical-align:-2px}
+
+/* tables of settings (Table 1, TB2) */
+.st{display:grid; gap:2px}
+.st-band{font:600 12px/1.2 var(--f-body); letter-spacing:.08em; text-transform:uppercase; color:var(--muted); padding:16px 6px 6px}
+.st-band:first-child{padding-top:4px}
+.st-row{display:grid; grid-template-columns:minmax(0,1.5fr) minmax(0,1.25fr) minmax(0,1fr) 128px; gap:16px; align-items:center; padding:7px 6px; border-radius:8px}
+.st-row:hover{background:color-mix(in oklab, var(--surface-2) 90%, transparent)}
+.st-row.hdr{padding-bottom:0; align-items:end}
+.st-row.hdr:hover{background:none}
+.st-row .lab{font-size:13.5px; line-height:1.35; min-width:0}
+.st-row .lab .who{display:block; color:var(--muted); font-size:12px; margin-top:2px}
+.st-row .lab .who.ours{color:var(--accent); font-weight:600}
+.cell{min-width:0}
+.cell svg{width:100%; height:22px; display:block; overflow:visible}
+.ph{font:600 13px/1.3 var(--f-body); color:var(--ink)}
+.ph small{display:block; font-weight:400; color:var(--muted); font-size:12px}
+.ph svg{display:block; overflow:visible; margin-top:4px}
+.cell .t{font-size:12.5px; color:var(--ink-2); font-variant-numeric:tabular-nums; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.cell .t b{color:var(--ink); font-weight:600}
+.colh{font:600 12px/1.3 var(--f-body); color:var(--ink-2)}
+.colh small{display:block; color:var(--muted); font-weight:400}
+.flag{display:inline-flex; align-items:center; gap:4px; font:600 11px/1 var(--f-body); padding:3px 6px; border-radius:5px; margin-left:4px; vertical-align:1px}
+.flag.bad{background:color-mix(in oklab, var(--bad) 14%, var(--surface)); color:var(--bad-ink)}
+.flag.inc{background:var(--surface-2); color:var(--muted); border:1px solid var(--line)}
+.flag svg{width:11px; height:11px}
+.tb2{display:grid; grid-template-columns:minmax(110px, 160px) repeat(3, minmax(0,1fr)); gap:4px 22px; align-items:center}
+.tb2 .hn{font-size:14px; font-weight:500; line-height:1.25; padding:8px 0}
+.tb2 .hn small{display:block; font-weight:400; color:var(--muted); font-size:12px}
+.tb2 .cell .lbl-m{display:none; font-size:12px; color:var(--muted)}
+.dev{display:grid; grid-template-columns:minmax(150px, 1.3fr) minmax(0,1fr) minmax(0,1fr); gap:4px 22px; align-items:center}
+.dev .grp{grid-column:1/-1; font:600 12px/1.2 var(--f-body); letter-spacing:.08em; text-transform:uppercase; color:var(--muted); padding:12px 0 2px}
+.dev .an{font-size:13.5px; line-height:1.3; padding:5px 0}
+.dev .an small{display:inline-block; font:500 11px/1 var(--f-mono); color:var(--muted); border:1px solid var(--line); border-radius:4px; padding:2px 4px; margin-left:6px; vertical-align:1px}
+.dev .an.ref{color:var(--ink-2)}
+.dev .cell{display:flex; align-items:center; gap:8px}
+.dev .cell svg{flex:1 1 auto; min-width:0}
+.dev .cell .t{flex:none; width:86px; margin:0}
+.dev .cell .lbl-m{display:none; font-size:12px; color:var(--muted); width:52px; flex:none}
+.callout{margin:0 0 14px; padding:10px 12px; border-radius:10px; border:1px dashed var(--axis); font-size:13.5px; color:var(--ink-2); background:var(--surface-2)}
+.callout b{color:var(--ink)}
+
+/* tooltip */
+.tip{position:fixed; z-index:100; pointer-events:none; background:var(--surface); color:var(--ink); border:1px solid var(--line); border-radius:10px; box-shadow:0 10px 30px -10px rgba(10,10,30,.35); padding:10px 12px; font-size:13px; line-height:1.4; max-width:300px; opacity:0; transition:opacity .12s ease}
+.tip.on{opacity:1}
+.tip .tt{font-weight:600; margin-bottom:6px; font-size:13px}
+.tip .tr{display:grid; grid-template-columns:auto auto 1fr; gap:8px; align-items:center; margin-top:3px}
+.tip .tr .k{color:var(--ink-2)}
+.tip .tr .v{font-weight:650; font-variant-numeric:tabular-nums; color:var(--ink)}
+.tip .key{width:12px; height:3px; border-radius:2px; display:inline-block}
+.tip .tn{margin-top:6px; color:var(--muted); font-size:12px}
+
+/* quickstart */
+.qs{display:grid; gap:26px; max-width:900px}
+.qs-step{display:grid; grid-template-columns:34px minmax(0,1fr); gap:14px}
+.qs-n{width:30px; height:30px; border-radius:999px; display:grid; place-items:center; font:600 14px/1 var(--f-body); background:var(--surface); border:1px solid var(--line); color:var(--ink-2)}
+.qs-step h3{font-size:17px; margin:3px 0 8px}
+.qs-step p{margin:0 0 10px; color:var(--ink-2); font-size:15px}
+.code{position:relative; background:var(--code-bg); border:1px solid var(--code-line); border-radius:12px; min-width:0}
+.code pre{margin:0; padding:10px 18px 16px; overflow-x:auto; font-size:13px; line-height:1.65; color:var(--code-ink); tab-size:2}
+.code .c{color:var(--code-muted)}
+.code .bar{display:flex; align-items:center; justify-content:space-between; gap:12px; padding:8px 8px 0 18px; min-height:34px}
+.code .bar .fname{padding:0}
+.code .copy{ font:500 12px/1 var(--f-body); color:var(--code-ink); background:color-mix(in oklab, var(--code-ink) 10%, transparent); border:1px solid color-mix(in oklab, var(--code-ink) 18%, transparent); border-radius:7px; padding:6px 9px; cursor:pointer}
+.code .copy:hover{background:color-mix(in oklab, var(--code-ink) 18%, transparent)}
+.code .fname{display:block; font:500 12px/1 var(--f-mono); color:var(--code-muted)}
+.tabs{display:flex; flex-wrap:wrap; gap:4px; margin-bottom:8px}
+.tabs button{font:500 13.5px/1 var(--f-body); padding:8px 12px; border-radius:8px; border:1px solid transparent; background:transparent; color:var(--ink-2); cursor:pointer}
+.tabs button[aria-selected="true"]{background:var(--surface); border-color:var(--line); color:var(--ink); box-shadow:0 1px 2px rgba(20,21,46,.08)}
+.tabpanel{display:grid; gap:8px}
+.names{border-collapse:collapse; font-size:14px; margin-top:4px}
+.names td{padding:6px 14px 6px 0; border-bottom:1px solid var(--line); color:var(--ink-2); vertical-align:top}
+.names td:first-child{white-space:nowrap; color:var(--ink)}
+
+/* release + cite */
+.rel td:first-child{min-width:200px}
+.rel td, .rel th{text-align:left; white-space:normal}
+.rel td:nth-child(3), .rel td:nth-child(4){white-space:nowrap}
+.lic{display:inline-block; font:600 12px/1 var(--f-body); padding:5px 8px; border-radius:6px; border:1px solid var(--line); background:var(--surface-2); color:var(--ink)}
+.lic.nc{border-color:color-mix(in oklab, var(--amber) 45%, var(--line))}
+.rel .ty{font-size:12px; color:var(--muted); display:block}
+footer{border-top:1px solid var(--line); padding-block:36px 48px; font-size:14px; color:var(--ink-2)}
+footer .wrap{display:flex; flex-wrap:wrap; gap:18px 32px; justify-content:space-between; align-items:flex-start}
+footer nav{display:flex; flex-wrap:wrap; gap:8px 18px}
+footer a{color:var(--ink-2)}
+footer .fine{flex-basis:100%; font-size:12.5px; color:var(--muted)}
+
+/* ---------- responsive ---------- */
+@media (max-width: 920px){
+  .hero .wrap{grid-template-columns:1fr; gap:24px}
+  .lanes{justify-self:start; max-width:460px}
+  .tldr{grid-template-columns:1fr}
+  .abs-grid{grid-template-columns:1fr; gap:12px}
+  .parts{grid-template-columns:1fr}
+  .proxy{grid-template-columns:1fr}
+  .st-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:6px 16px}
+  .st-row .lab{grid-column:1/-1}
+  .st-row.hdr .lab{display:none}
+  .st-row .time{grid-column:1/-1}
+  .st-row.hdr .time{display:none}
+}
+@media (max-width: 720px){
+  section{padding-block:44px}
+  .nav-links a{padding:6px 8px; font-size:13.5px}
+  .nav .brand span{display:none}
+  .row{grid-template-columns:minmax(0,1fr) 40px; gap:2px 8px; padding:4px 4px}
+  .row .nm{font-size:12.5px; grid-column:1/-1}
+  .row.hdr .nm{display:none}
+  .rel thead{display:none}
+  .rel tbody tr{display:grid; grid-template-columns:minmax(0,1fr) auto; gap:6px 12px; padding:12px; border-bottom:1px solid var(--line)}
+  .rel tbody tr:last-child{border-bottom:0}
+  .rel td{border:0; padding:0; min-width:0!important}
+  .rel td:nth-child(2), .rel td:nth-child(4){grid-column:1/-1}
+  .rel td:nth-child(3){grid-column:2; grid-row:1; text-align:right}
+  .tb2{grid-template-columns:1fr; gap:2px}
+  .tb2 .ph-empty{display:none}
+  .tb2 .hn{padding:10px 0 0}
+  .tb2 .cell .lbl-m{display:block}
+  .tb2 .ph{display:none}
+  .dev{grid-template-columns:minmax(0,1fr); gap:2px}
+  .dev .an{padding:8px 0 0}
+  .dev .dh-name, .dev .ph{display:none}
+  .dev .cell .lbl-m{display:block}
+  .card{padding:16px 14px 12px}
+  .kpi .v{font-size:26px}
+  .mm{grid-template-columns:76px repeat(5, minmax(0,1fr)); gap:3px}
+  .mm .mh{font-size:11px}
+  .mm .mh small{display:none}
+  .mm .rl{font-size:11.5px}
+  .mm .rl small{display:none}
+  .mm-cell{min-height:46px; padding:5px 2px; border-radius:7px}
+  .mm-cell .d{font-size:12px}
+  .mm-cell .s{font-size:10.5px}
+  .mm-cell .ic{width:10px; height:10px; top:3px; right:3px}
+  .abstract{font-size:17.5px}
+}
+@media (max-width: 420px){
+  .kpis{grid-template-columns:1fr}
+  .btn{height:38px; padding:0 13px; font-size:14px}
+}
+</style>
+</head>
+<body>
+<a class="sr-only" href="#overview">Skip to content</a>
+
+<header class="nav">
+  <div class="wrap">
+    <a class="brand" href="#top" aria-label="JevAgentHarness, back to top"><img src="assets/logo.png" alt="" width="28" height="28"><span>JevAgentHarness</span></a>
+    <nav class="nav-links" aria-label="Sections">
+      <a href="#overview">Overview</a>
+      <a href="#abstract">Abstract</a>
+      <a href="#method">Method</a>
+      <a href="#results">Results</a>
+      <a href="#quickstart">Quickstart</a>
+      <a href="#release">Release</a>
+      <a href="#citation">Cite</a>
+    </nav>
+    <button class="theme-btn" id="themeBtn" type="button" aria-label="Switch between light and dark theme">
+      <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M4.6 4.6l1.6 1.6M17.8 17.8l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.6 19.4l1.6-1.6M17.8 6.2l1.6-1.6"/></svg>
+      <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/></svg>
+    </button>
+  </div>
+</header>
+
+<main id="top">
+<!-- ======================================================= hero -->
+<div class="hero">
+  <div class="wrap">
+    <div>
+      <div class="eyebrow rise">Decision models for LLM agents</div>
+      <h1 class="rise">
+        <span class="t-name"><img src="assets/logo.png" alt="" width="62" height="62">JevAgentHarness</span>
+        <span class="t-sub">Benchmarking, Deploying and Training Decision Models That Share Control with LLMs</span>
+      </h1>
+      <p class="authors rise">
+        <span>Kunlun Zhu<sup>1</sup>,</span> <span>Tao Feng<sup>1</sup>,</span> <span>Xu Han<sup>1</sup>,</span> <span>Heng Wang<sup>1</sup>,</span>
+        <span>Ling Yang<sup>2</sup>,</span> <span>Xiangru Tang<sup>3</sup>,</span> <span>Jiaxuan You<sup>1</sup>,</span> <span>Heng Ji<sup>1</sup></span>
+      </p>
+      <p class="affil rise"><span><sup>1</sup>University of Illinois Urbana-Champaign</span><span><sup>2</sup>Princeton University</span><span><sup>3</sup>Google</span></p>
+      <div class="btns rise">
+        <a class="btn primary" href="https://github.com/JevAgentHarness/JevAgentHarness/blob/main/paper/JevAgentHarness.pdf">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></svg>Paper</a>
+        <span class="btn" aria-disabled="true" title="The arXiv version is coming soon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 19 12 5l7 14M8.2 13h7.6"/></svg>arXiv <span class="soon">soon</span></span>
+        <a class="btn" href="https://github.com/JevAgentHarness/JevAgentHarness">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m8 7-5 5 5 5M16 7l5 5-5 5M13.5 4l-3 16"/></svg>Code</a>
+        <a class="btn" href="https://huggingface.co/JevAgentHarness">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 2.8 20 7.4v9.2l-8 4.6-8-4.6V7.4z"/><path d="M4 7.4 12 12l8-4.6M12 12v9.2"/></svg>Models</a>
+        <a class="btn" href="https://huggingface.co/datasets/JevAgentHarness/AgentDecisionBench">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><ellipse cx="12" cy="5.5" rx="7.5" ry="2.8"/><path d="M4.5 5.5v13c0 1.5 3.4 2.8 7.5 2.8s7.5-1.3 7.5-2.8v-13M4.5 12c0 1.5 3.4 2.8 7.5 2.8s7.5-1.3 7.5-2.8"/></svg>Benchmark</a>
+      </div>
+      <div class="sublinks rise">
+        <div><b>Models</b><a href="https://huggingface.co/JevAgentHarness/AgentDecision-4B">AgentDecision-4B</a><span class="dot">·</span><a href="https://huggingface.co/JevAgentHarness/AgentDecision-4B-v1">AgentDecision-4B-v1</a><span class="dot">·</span><a href="https://huggingface.co/JevAgentHarness/AgentDecision-0.8B">AgentDecision-0.8B</a></div>
+        <div><b>Datasets</b><a href="https://huggingface.co/datasets/JevAgentHarness/AgentDecisionBench">AgentDecisionBench</a><span class="dot">·</span><a href="https://huggingface.co/datasets/JevAgentHarness/AgentDecision-train">AgentDecision-train</a><span class="dot">·</span><a href="https://huggingface.co/datasets/JevAgentHarness/coding-agent-decisions">coding-agent-decisions</a></div>
+      </div>
+    </div>
+    <div class="lanes" aria-hidden="true">
+      <svg viewBox="0 0 540 324">
+        <defs>
+          <path id="ln-fast" d="M20 160 L200 160 C262 160 268 252 332 252 L470 252"/>
+          <path id="ln-slow" d="M20 160 L200 160 C262 160 268 84 332 84 L470 84"/>
+        </defs>
+        <text class="lbl" x="318" y="26">The LLM decides</text>
+        <text class="lbl-s" x="318" y="47">when unsure: slow, costly</text>
+        <path d="M200 160 C262 160 268 84 332 84 L470 84" fill="none" stroke="var(--brand-v)" stroke-width="7" stroke-linecap="round"/>
+        <path d="M452 66 L474 84 L452 102" fill="none" stroke="var(--brand-v)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M200 160 C262 160 268 252 332 252 L470 252" fill="none" stroke="var(--brand-t)" stroke-width="7" stroke-linecap="round"/>
+        <path d="M452 234 L474 252 L452 270" fill="none" stroke="var(--brand-t)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+        <text class="lbl" x="318" y="292">The decision model decides</text>
+        <text class="lbl-s" x="318" y="313">when confident: fast, cheap</text>
+        <path d="M20 160 L200 160" fill="none" stroke="var(--brand-a)" stroke-width="7" stroke-linecap="round"/>
+        <g class="flow-dot">
+          <circle r="5.5" fill="var(--surface)" stroke="var(--brand-t)" stroke-width="3"><animateMotion dur="2.8s" repeatCount="indefinite" begin="-0.2s"><mpath href="#ln-fast"/></animateMotion></circle>
+          <circle r="5.5" fill="var(--surface)" stroke="var(--brand-t)" stroke-width="3"><animateMotion dur="2.8s" repeatCount="indefinite" begin="-0.9s"><mpath href="#ln-fast"/></animateMotion></circle>
+          <circle r="5.5" fill="var(--surface)" stroke="var(--brand-t)" stroke-width="3"><animateMotion dur="2.8s" repeatCount="indefinite" begin="-1.6s"><mpath href="#ln-fast"/></animateMotion></circle>
+          <circle r="5.5" fill="var(--surface)" stroke="var(--brand-t)" stroke-width="3"><animateMotion dur="2.8s" repeatCount="indefinite" begin="-2.3s"><mpath href="#ln-fast"/></animateMotion></circle>
+          <circle r="5.5" fill="var(--surface)" stroke="var(--brand-v)" stroke-width="3"><animateMotion dur="5.6s" repeatCount="indefinite" begin="-3.4s"><mpath href="#ln-slow"/></animateMotion></circle>
+        </g>
+        <g class="static-dot">
+          <circle cx="80" cy="160" r="5.5" fill="var(--surface)" stroke="var(--brand-a)" stroke-width="3"/>
+          <circle cx="140" cy="160" r="5.5" fill="var(--surface)" stroke="var(--brand-a)" stroke-width="3"/>
+          <circle cx="372" cy="252" r="5.5" fill="var(--surface)" stroke="var(--brand-t)" stroke-width="3"/>
+          <circle cx="414" cy="252" r="5.5" fill="var(--surface)" stroke="var(--brand-t)" stroke-width="3"/>
+          <circle cx="390" cy="84" r="5.5" fill="var(--surface)" stroke="var(--brand-v)" stroke-width="3"/>
+        </g>
+        <circle cx="200" cy="160" r="18" fill="var(--brand-a)"/>
+        <circle cx="200" cy="160" r="7" fill="var(--surface)"/>
+        <text class="lbl-s" x="200" y="128" text-anchor="middle">confident?</text>
+        <text class="lbl" x="20" y="200">Every step of the agent</text>
+        <text class="lbl-s" x="20" y="221">which tool? arguments? stop?</text>
+      </svg>
+    </div>
+  </div>
+</div>
+
+<!-- ======================================================= overview -->
+<section id="overview">
+  <div class="wrap">
+    <div class="tldr">
+      <div>
+        <div class="sec-head">
+          <span class="eyebrow">TL;DR</span>
+          <h2>Let a small model make the routine choices of an agent</h2>
+        </div>
+        <div class="prose">
+          <p class="lead">Most steps of an LLM agent end in a multiple-choice decision, such as which tool to call next. A small decision model can answer many of them in a fraction of an LLM call's time and price. We test such models inside running agents, deploy them behind a confidence threshold fitted on the agent's own trajectories, and train an open 4B model on the states an agent actually visits.</p>
+        </div>
+        <div class="kpis" id="kpis" aria-live="polite"></div>
+      </div>
+      <figure class="paperfig">
+        <div class="pf-img"><img src="assets/fig1.webp" width="1390" height="1048" alt="Figure 1 of the paper. Top: today the LLM makes every choice (tool, arguments, stop), one LLM call per step, slow and costly. Middle: most steps are multiple choice; a decision model scores the options (get_order, cancel_order, ask_user) and decides when its confidence clears a threshold, otherwise the LLM decides. Bottom: with a decision model, most steps run without the LLM, which is faster and cheaper."></div>
+        <figcaption><b>Figure 1.</b> Most of an agent's LLM calls end in a multiple-choice decision, and a small decision model can make the routine ones in a fraction of the time and price. The LLM makes the choices the decision model is unsure of.<span class="credit">Icons: Microsoft Fluent Emoji (MIT).</span></figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ======================================================= abstract -->
+<section id="abstract">
+  <div class="wrap">
+    <div class="abs-grid"><div class="sec-head" style="margin:0"><span class="eyebrow">Abstract</span></div>
+    <div class="abstract"><p>Large language model (LLM) agents now fix software, operate computers and serve customers, but their harnesses, the programs that run them, call a large LLM at every step, which makes long tasks slow and costly. Most of these calls end in a multiple-choice decision, such as which tool to call next. Decision models such as Jev answer these questions directly, at a fraction of an LLM call's time and price. We ask how a harness can delegate these decisions to a decision model with little loss of success. To evaluate decision models in agentic tasks, we build AgentDecisionBench, which tests them from isolated questions up to control of a running agent, on public benchmarks and our DecisionGym environment. The decision model most accurate on isolated questions solved only 69.5% of agent tasks, and without a fitted confidence threshold, delegating tool choices lowered success by 19.0 points. Building on these findings, we then design JevAgentHarness, which fits this threshold for each choice on the agent's own trajectories and lets the LLM decide below it. Because existing decision models never see the states an agent reaches after its own mistakes, we train AgentDecision-4B, an open 4B model, on such states with Jev's answers as labels. On tasks unlike its training data, the agent solved 91.5% of them with AgentDecision-4B and 82.0% with Jev. On tasks like their training data, 4B models trained this way made agents 81.1-89.0% cheaper and up to 2.5 times faster, without losing 3 or more points of task success. The models, data, and harness will be released at <a href="https://github.com/JevAgentHarness/JevAgentHarness">https://github.com/JevAgentHarness/JevAgentHarness</a>.</p></div></div>
+  </div>
+</section>
+
+<!-- ======================================================= method -->
+<section id="method">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow">Method</span>
+      <h2>Three parts: evaluate, deploy, train</h2>
+      <p>Each part answers one question. Which decision models work inside an agent? How should a harness use them? Can a small open model learn the decisions?</p>
+    </div>
+    <div class="parts">
+      <article class="part">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></div>
+        <span class="role">Benchmark</span>
+        <h3>AgentDecisionBench</h3>
+        <p>Tests decision models at three levels, each closer to real use, on public benchmarks and on DecisionGym. DecisionGym is a customer-service environment that knows the acceptable next steps at every state, so each choice can be scored.</p>
+        <ul class="levels">
+          <li><span class="lv lv1">L1</span><span><b>Isolated questions.</b> One question with no agent around it.</span></li>
+          <li><span class="lv lv2">L2</span><span><b>Step level.</b> States from recorded agent runs. Answers are scored but not carried out.</span></li>
+          <li><span class="lv lv3">L3</span><span><b>Task level.</b> The model makes a running agent's choices. Scored by task success.</span></li>
+        </ul>
+        <a class="more" href="https://huggingface.co/datasets/JevAgentHarness/AgentDecisionBench">Dataset on Hugging Face</a>
+      </article>
+      <article class="part">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h6M9 12c3 0 3-6 6-6h6M9 12c3 0 3 6 6 6h6"/><circle cx="9" cy="12" r="2"/></svg></div>
+        <span class="role">Harness</span>
+        <h3>JevAgentHarness</h3>
+        <p>Puts a decision model into an existing harness. At a decision point the harness asks a typed multiple-choice question. It uses the answer only when the model's confidence clears a threshold fitted on the agent's own logs. Below the threshold, the LLM decides.</p>
+        <span class="ctl-l">Decision points</span>
+        <div class="chips" aria-label="Decision points"><span class="chip">tool choice</span><span class="chip">arguments</span><span class="chip">stop</span><span class="chip">reflection</span><span class="chip">routing</span><span class="chip">memory</span><span class="chip">action</span></div>
+        <span class="ctl-l">Modes</span>
+        <div class="chips" aria-label="Modes"><span class="chip">replace</span><span class="chip">cascade</span><span class="chip">assist</span><span class="chip">guard</span><span class="chip">trigger</span></div>
+        <a class="more" href="https://github.com/JevAgentHarness/JevAgentHarness">Code on GitHub</a>
+      </article>
+      <article class="part">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="6" y="6" width="12" height="12" rx="2"/><path d="M9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4M10 10h4v4h-4z"/></svg></div>
+        <span class="role">Model</span>
+        <h3>AgentDecision-4B and -0.8B</h3>
+        <p>Existing decision models never see the states an agent reaches after its own mistakes. We train on exactly those states, with Jev's answers as labels. AgentDecision-0.8B applies the same recipe to StartLux-Decision-0.8B.</p>
+        <ol class="flow" aria-label="Training chain">
+          <li><b>Agent states</b> labelled with Jev's answers</li>
+          <li><b>SFT</b> learns Jev's answers</li>
+          <li><b>GRPO</b> rewards success with fewer LLM calls</li>
+          <li><b>Public tool-use data</b> for the released 4B model</li>
+        </ol>
+        <a class="more" href="https://huggingface.co/JevAgentHarness">Models on Hugging Face</a>
+      </article>
+    </div>
+
+    <figure class="paperfig wide-fig">
+      <div class="pf-img"><img src="assets/fig2.webp" width="2200" height="775" alt="Figure 2 of the paper. Panel 1, Procedure (Stage 1, what to delegate): record the decision model silently on calibration tasks, fit a threshold per decision point, test each delegation (is it as good and cheaper? yes: delegate it, no: the LLM keeps it), select and freeze the passing delegations. Panel 2, Benchmark and harness: 8 decision points, 5 integration modes (replace, assist, guard, cascade, trigger), 3 benchmark levels (isolated questions, recorded agent runs, a running agent), cost and time of every call, adapters for existing harnesses. Panel 3, Post-training AgentDecision-4B: visited states labelled by Jev and the answer key, SFT to learn Jev's answers, GRPO for success with fewer LLM calls; AgentDecision-4B replaces Jev." loading="lazy"></div>
+      <figcaption><b>Figure 2.</b> Overview of the pipeline. Stage 1 tests each kind of choice alone, and Stage 2 tests the passing delegations together on new tasks. These were the tool and argument cascades and a reflection trigger.</figcaption>
+    </figure>
+
+    <div class="proxy">
+      <div class="prose">
+        <span class="eyebrow">Open-source proxy</span>
+        <h3 style="font:500 28px/1.15 var(--f-display); margin:8px 0 12px">Routing for coding agents, with no change to the agent</h3>
+        <p>JevAgentHarness also ships as a local OpenAI-compatible proxy. Codex, pi, DeepSeek Harness, mini-swe-agent and Terminus-2 work through it unchanged.</p>
+      </div>
+      <div class="prose">
+        <ol class="steps" style="margin-top:4px">
+          <li>The harness sends each model call to the proxy instead of the provider.</li>
+          <li>A decision model reads the agent's state and answers one question: is the next step routine or hard?</li>
+          <li>Routine steps go to a fast model and hard steps to the strong one. The first step and the decision that the task is done stay on the strong model, and any error falls back to it.</li>
+          <li>Every step is logged with its tier, tokens, cost and latency, so <code>jah report</code> shows the saving on your own tasks.</li>
+        </ol>
+      </div>
+      <figure class="paperfig full" style="margin:0">
+        <div class="pf-img"><img src="assets/architecture.svg" width="1200" height="590" alt="Architecture of the JevAgentHarness proxy. An unmodified agent harness (Codex CLI, pi, DeepSeek Harness, mini-swe-agent, Terminus-2) sends every step through the OpenAI-compatible API to the proxy. The proxy keeps per-session state, asks a decision model whether the next step is routine or hard, and applies router rules: first step strong, escalate when p(hard) is at least tau, finish check, fail-safe. Hard steps go to the strong model, routine steps to the fast model. Every step is logged." loading="lazy"></div>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ======================================================= results -->
+<section id="results">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow">Results</span>
+      <h2>What the experiments show</h2>
+      <p>Every number on this page is read from the released data files. Hover or focus a mark for details, or open the numbers under each chart.</p>
+    </div>
+
+    <!-- R1 leaderboard -->
+    <div class="res-block" id="leaderboard">
+      <div class="res-title"><span class="eyebrow">AgentDecisionBench</span><h3>Decision-model leaderboard</h3></div>
+      <figure class="card" style="margin:0">
+        <div class="card-h"><h4 id="lb-title">Accuracy on isolated questions says little about success inside the agent</h4>
+          <p id="lb-sub">Each row is one decision model at the three levels (%). Rows are sorted by task success.</p></div>
+        <div class="controls">
+          <div class="ctl"><span class="ctl-l">Tasks</span><div class="seg" id="lb-set" role="group" aria-label="Task set">
+            <button type="button" data-v="shift" aria-pressed="true">Shifted tasks</button>
+            <button type="button" data-v="common" aria-pressed="false">Common states</button></div></div>
+          <div class="ctl"><span class="ctl-l">Show</span>
+            <button type="button" class="tog" data-k="ours" aria-pressed="true">Ours</button>
+            <button type="button" class="tog" data-k="other" aria-pressed="true">Other decision models</button>
+            <button type="button" class="tog" data-k="variant" aria-pressed="false">Training variants</button></div>
+        </div>
+        <div class="legend" id="lb-legend"></div>
+        <div class="chart" id="lb-chart"></div>
+        <p class="note" id="lb-note"></p>
+        <div class="src"><span>Source: <a href="https://huggingface.co/datasets/JevAgentHarness/AgentDecisionBench">AgentDecisionBench</a>, configs <code>leaderboard</code> and <code>models</code> (<a href="data/leaderboard.json">data/leaderboard.json</a>). Paper: Table 3, Figure 4b, App. G.</span></div>
+      </figure>
+      <div class="card">
+        <div class="card-h"><h4>Full leaderboard</h4><p id="lbt-sub">All models with their numbers at each level. Click a column to sort. A dash means the model was not run at that level.</p></div>
+        <div class="controls"><div class="ctl"><span class="ctl-l">Show</span><div class="seg" id="lbt-kind" role="group" aria-label="Model kind">
+          <button type="button" data-v="all" aria-pressed="true">All</button>
+          <button type="button" data-v="ours" aria-pressed="false">Ours</button>
+          <button type="button" data-v="other" aria-pressed="false">Off-the-shelf</button>
+          <button type="button" data-v="variant" aria-pressed="false">Training variants</button>
+          <button type="button" data-v="llm" aria-pressed="false">LLMs and rankers</button></div></div></div>
+        <div class="tbl-wrap" id="lbt" style="max-height:560px"></div>
+      </div>
+    </div>
+
+    <!-- R2 frontier + levels -->
+    <div class="res-block" id="frontier">
+      <div class="res-title"><span class="eyebrow">Paper, Figure 4</span><h3>Isolated accuracy, cost, and success inside the agent</h3></div>
+      <figure class="card" style="margin:0">
+        <div class="card-h"><h4 id="fr-title">Cost against accuracy on isolated questions</h4><p id="fr-sub"></p></div>
+        <div class="legend" id="fr-legend"></div>
+        <div class="chart" id="fr-chart"></div>
+        <details class="numbers"><summary>Show the numbers</summary><div class="tbl-wrap" id="fr-table"></div></details>
+        <div class="src"><span>Source: <a href="data/frontier.json">data/frontier.json</a>, built from <a id="fr-link-e30" href="#">e30_cost.tex</a> and <a id="fr-link-e9" href="#">e9_frontier.tex</a>. Paper: Figure 4a, App. G.6 and G.7.</span></div>
+      </figure>
+      <figure class="card">
+        <div class="card-h"><h4 id="sl-title">Isolated scores do not rank decision models for agents</h4><p id="sl-sub"></p></div>
+        <div class="legend" id="sl-legend"></div>
+        <div class="chart" id="sl-chart"></div>
+        <details class="numbers"><summary>Show the numbers</summary><div class="tbl-wrap" id="sl-table"></div></details>
+        <div class="src"><span>Source: <a href="data/frontier.json">data/frontier.json</a> (AgentDecisionBench leaderboard rows; Kendall from <a id="sl-link" href="#">e21_shift.tex</a>). Paper: Figure 4b, Sec. 7.1.</span></div>
+      </figure>
+    </div>
+
+    <!-- R3 module map -->
+    <div class="res-block" id="modulemap">
+      <div class="res-title"><span class="eyebrow">Paper, Figure 5</span><h3>Where a decision model can take over</h3></div>
+      <figure class="card" style="margin:0">
+        <div class="card-h"><h4 id="mm-title">Delegating tool and argument choices in a cascade saved cost without losing success</h4><p id="mm-sub"></p></div>
+        <div class="controls"><div class="ctl"><span class="ctl-l">Colour by</span><div class="seg" id="mm-view" role="group" aria-label="Colour the cells by">
+          <button type="button" data-v="verdict" aria-pressed="true">Outcome</button>
+          <button type="button" data-v="delta" aria-pressed="false">Success change</button>
+          <button type="button" data-v="saving" aria-pressed="false">Cost saved</button></div></div></div>
+        <div class="legend" id="mm-legend"></div>
+        <div id="mm-grid" class="mm" role="grid" aria-label="Module map: decision points by modes"></div>
+        <details class="numbers"><summary>What the rows and columns mean (paper Figure 3)</summary>
+          <figure class="paperfig" style="margin-top:12px; box-shadow:none">
+            <div class="pf-img"><img src="assets/fig3.webp" width="2200" height="694" alt="Figure 3 of the paper. (a) Where a decision model can act: eight decision points in one step of the loop (cheaper LLM, reflect, which tool, arguments, stop, write memory, read memory, and which action in text games). (b) How it acts, five modes: Replace, the decision model always decides with no LLM call; Cascade, it decides when sure, otherwise the LLM decides; Assist, it shortlists or advises and the LLM picks; Guard, the LLM proposes and it approves or sends it back; Trigger, it decides whether an optional step runs." loading="lazy"></div>
+            <figcaption><b>Figure 3.</b> A decision model can act at eight points of the agent loop, in five modes. Filled boxes choose the agent's action, and outlined boxes control the loop.</figcaption>
+          </figure>
+        </details>
+        <details class="numbers"><summary>Show the numbers</summary><div class="tbl-wrap" id="mm-table"></div></details>
+        <div class="src"><span>Source: <a href="data/module_map.json">data/module_map.json</a>, built from <a id="mm-link" href="#">module_map.tex</a>. Paper: Figure 5, Sec. 7.2; full map with intervals in App. G.2.</span></div>
+      </figure>
+    </div>
+
+    <!-- R4 harder settings -->
+    <div class="res-block" id="settings">
+      <div class="res-title"><span class="eyebrow">Paper, Table 1</span><h3>Delegation in harder settings</h3></div>
+      <figure class="card" style="margin:0">
+        <div class="card-h"><h4 id="hs-title">Delegation in harder settings</h4><p id="hs-sub">Task success of the LLM alone and with the delegation, the share of the cost saved, and the mean time per task.</p></div>
+        <div class="legend" id="hs-legend"></div>
+        <div class="st" id="hs-chart"></div>
+        <details class="numbers"><summary>Show the numbers</summary><div class="tbl-wrap" id="hs-table"></div></details>
+        <div class="src"><span>Source: <a href="data/hard_settings.json">data/hard_settings.json</a>, built from the paper's generated tables (<a id="hs-link" href="#">research/paper/generated</a>). Paper: Table 1, Sec. 7.3.</span></div>
+      </figure>
+    </div>
+
+    <!-- R5 terminal bench -->
+    <div class="res-block" id="terminal-bench">
+      <div class="res-title"><span class="eyebrow">Open-source proxy</span><h3>Coding agents on Terminal-Bench 2.0</h3></div>
+      <figure class="card" style="margin:0">
+        <div class="card-h"><h4 id="tb-title">Coding agents on Terminal-Bench 2.0</h4><p id="tb-sub"></p></div>
+        <div class="controls"><div class="ctl"><span class="ctl-l">Setting</span><div class="seg" id="tb-set" role="group" aria-label="Model setting"></div></div></div>
+        <div class="legend" id="tb-legend"></div>
+        <div class="tb2" id="tb-chart"></div>
+        <p class="note" id="tb-note"></p>
+        <details class="numbers"><summary>Show the numbers</summary><div class="tbl-wrap" id="tb-table"></div></details>
+        <div class="src"><span>Source: <a href="data/tb2.json">data/tb2.json</a>, copied from <a id="tb-link" href="#">bench/results</a> and the run configs. Protocol written before the test runs: <a href="https://github.com/JevAgentHarness/JevAgentHarness/blob/main/bench/PROTOCOL.md">bench/PROTOCOL.md</a>.</span></div>
+      </figure>
+      <figure class="card">
+        <div class="card-h"><h4 id="dv-title">Decision-point modes on the development split</h4><p id="dv-sub"></p></div>
+        <p class="callout" id="dv-callout"></p>
+        <div class="legend" id="dv-legend"></div>
+        <div class="dev" id="dv-chart"></div>
+        <details class="numbers"><summary>Show the numbers</summary><div class="tbl-wrap" id="dv-table"></div></details>
+        <div class="src"><span>Source: <a href="data/dev_modes.json">data/dev_modes.json</a>, a copy of <a href="https://github.com/JevAgentHarness/JevAgentHarness/blob/main/bench/results/dev_modes.json">bench/results/dev_modes.json</a>. Details: <a href="https://github.com/JevAgentHarness/JevAgentHarness/blob/main/docs/modes.md">docs/modes.md</a>.</span></div>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ======================================================= quickstart -->
+<section id="quickstart">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow">Quickstart</span>
+      <h2>Route your coding agent in three steps</h2>
+      <p>The proxy holds the provider keys. Your harness gets a local URL and a dummy key, so keys never enter the agent's sandbox.</p>
+    </div>
+    <div class="qs">
+      <div class="qs-step"><span class="qs-n">1</span><div style="min-width:0">
+        <h3>Install and start the proxy</h3>
+        <div class="code"><button class="copy" type="button">Copy</button><pre><code>git clone https://github.com/JevAgentHarness/JevAgentHarness.git &amp;&amp; cd JevAgentHarness
+pip install -e .
+export GEMINI_API_KEY=...              <span class="c"># the LLM tiers (Gemini by default; any OpenAI-compatible API works)</span>
+export OPENROUTER_API_KEY=...          <span class="c"># the decision model (Jev on OpenRouter); or use {type: rules}, no key</span>
+jah init                               <span class="c"># optional: writes ~/.jah/config.yaml (commented) to edit</span>
+jah serve                              <span class="c"># http://127.0.0.1:8787/v1, uses ~/.jah/config.yaml if it exists</span></code></pre></div>
+      </div></div>
+      <div class="qs-step"><span class="qs-n">2</span><div style="min-width:0">
+        <h3>Point your harness at it</h3>
+        <p>Use the base URL <code>http://127.0.0.1:8787/v1</code>, any dummy key and the model name <code>jah-auto</code>. <code>jah setup &lt;harness&gt;</code> prints the snippet for your harness.</p>
+        <table class="names"><tbody>
+          <tr><td><code>jah-auto</code></td><td>routed: the decision model picks the tier for every step</td></tr>
+          <tr><td><code>jah-strong</code></td><td>every step on the strong tier (your baseline)</td></tr>
+          <tr><td><code>jah-fast</code></td><td>every step on the fast tier</td></tr>
+        </tbody></table>
+        <div style="margin-top:14px">
+          <div class="tabs" role="tablist" aria-label="Harness">
+            <button type="button" role="tab" id="tab-codex" aria-controls="pan-codex" aria-selected="true">Codex</button>
+            <button type="button" role="tab" id="tab-dsh" aria-controls="pan-dsh" aria-selected="false" tabindex="-1">DeepSeek Harness</button>
+            <button type="button" role="tab" id="tab-pi" aria-controls="pan-pi" aria-selected="false" tabindex="-1">pi</button>
+            <button type="button" role="tab" id="tab-mswe" aria-controls="pan-mswe" aria-selected="false" tabindex="-1">mini-swe-agent</button>
+            <button type="button" role="tab" id="tab-sdk" aria-controls="pan-sdk" aria-selected="false" tabindex="-1">OpenAI SDK</button>
+          </div>
+          <div class="tabpanel" role="tabpanel" id="pan-codex" aria-labelledby="tab-codex">
+            <div class="code"><span class="fname">~/.codex/config.toml</span><button class="copy" type="button">Copy</button><pre><code>model_provider = "jah"
+model = "jah-auto"
+web_search = "disabled"
+
+[model_providers.jah]
+name = "JevAgentHarness"
+base_url = "http://127.0.0.1:8787/v1"
+env_key = "JAH_API_KEY"
+wire_api = "responses"
+stream_idle_timeout_ms = 600000</code></pre></div>
+            <div class="code"><button class="copy" type="button">Copy</button><pre><code>JAH_API_KEY=jah codex exec --skip-git-repo-check "fix the failing test"</code></pre></div>
+          </div>
+          <div class="tabpanel" role="tabpanel" id="pan-dsh" aria-labelledby="tab-dsh" hidden>
+            <div class="code"><span class="fname">jah.patch.yml</span><button class="copy" type="button">Copy</button><pre><code>- id: llm-pi-ai
+  config:
+    providers:
+      jah:
+        api: openai-completions
+        baseURL: "http://127.0.0.1:8787/v1"
+        apiKeyEnv: JAH_API_KEY
+        compat: {supportsStore: false}
+        models:
+          - {id: jah-auto, contextWindow: 1000000, maxTokens: 65536}
+- id: agent-default-model
+  config: {provider: jah, model: jah-auto}</code></pre></div>
+            <div class="code"><button class="copy" type="button">Copy</button><pre><code>JAH_API_KEY=jah dsh --profile headless --patch jah.patch.yml "fix the failing test" --json</code></pre></div>
+          </div>
+          <div class="tabpanel" role="tabpanel" id="pan-pi" aria-labelledby="tab-pi" hidden>
+            <div class="code"><span class="fname">~/.pi/agent/models.json</span><button class="copy" type="button">Copy</button><pre><code>{"providers": {"jah": {"baseUrl": "http://127.0.0.1:8787/v1", "api": "openai-completions", "apiKey": "JAH_API_KEY",
+  "models": [{"id": "jah-auto", "reasoning": true, "contextWindow": 1000000, "maxTokens": 65536}]}}}</code></pre></div>
+            <div class="code"><button class="copy" type="button">Copy</button><pre><code>JAH_API_KEY=jah pi --provider jah --model jah-auto "fix the failing test"</code></pre></div>
+          </div>
+          <div class="tabpanel" role="tabpanel" id="pan-mswe" aria-labelledby="tab-mswe" hidden>
+            <div class="code"><span class="fname">jah.yaml</span><button class="copy" type="button">Copy</button><pre><code>model:
+  model_name: openai/jah-auto
+  model_kwargs: {api_base: "http://127.0.0.1:8787/v1", api_key: jah}
+  cost_tracking: ignore_errors    <span class="c"># litellm has no price for jah-*; the proxy logs the cost</span></code></pre></div>
+            <div class="code"><button class="copy" type="button">Copy</button><pre><code>mini -c mini.yaml -c jah.yaml -t "fix the failing test"</code></pre></div>
+          </div>
+          <div class="tabpanel" role="tabpanel" id="pan-sdk" aria-labelledby="tab-sdk" hidden>
+            <div class="code"><button class="copy" type="button">Copy</button><pre><code>from openai import OpenAI
+client = OpenAI(base_url="http://127.0.0.1:8787/v1", api_key="jah")
+client.chat.completions.create(model="jah-auto", messages=[...], tools=[...])</code></pre></div>
+            <p style="margin:0; font-size:14px; color:var(--ink-2)">For litellm-based agents, use the model <code>openai/jah-auto</code> with <code>api_base="http://127.0.0.1:8787/v1"</code>.</p>
+          </div>
+        </div>
+      </div></div>
+      <div class="qs-step"><span class="qs-n">3</span><div style="min-width:0">
+        <h3>Measure the saving on your own tasks</h3>
+        <p>Run the same task with <code>jah-strong</code> and <code>jah-auto</code>, then compare them. Shadow mode logs what every decision point would do without changing anything, and <code>jah fit</code> fits the thresholds on those logs.</p>
+        <div class="code"><button class="copy" type="button">Copy</button><pre><code>jah report ~/.jah/logs            <span class="c"># per model name: sessions, steps, strong share, $ and LLM seconds per session</span>
+jah serve --preset shadow         <span class="c"># every point logs its answer next to what the agent did; nothing changes</span>
+jah fit ~/.jah/logs               <span class="c"># fit each point's threshold on those logs and print a config snippet</span></code></pre></div>
+      </div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================================================= release -->
+<section id="release">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow">Release</span>
+      <h2>Models, data and code</h2>
+      <p>The models and the training and coding data are released for non-commercial use under CC BY-NC 4.0. The benchmark is released under CC BY 4.0 and the code under MIT.</p>
+    </div>
+    <div class="tbl-wrap">
+      <table class="tbl rel">
+        <thead><tr><th>Release</th><th>What it is</th><th>Licence</th><th>Link</th></tr></thead>
+        <tbody>
+          <tr><td><b>AgentDecision-4B</b><span class="ty">Model</span></td><td>Qwen3-4B trained on agent states with Jev's answers as labels (SFT, then GRPO), then on public tool-use data. The main 4B model of the paper.</td><td><span class="lic nc">CC BY-NC 4.0</span></td><td><a href="https://huggingface.co/JevAgentHarness/AgentDecision-4B">Hugging Face</a></td></tr>
+          <tr><td><b>AgentDecision-4B-v1</b><span class="ty">Model</span></td><td>The SFT and GRPO checkpoint, frozen before the Stage 2 tests.</td><td><span class="lic nc">CC BY-NC 4.0</span></td><td><a href="https://huggingface.co/JevAgentHarness/AgentDecision-4B-v1">Hugging Face</a></td></tr>
+          <tr><td><b>AgentDecision-0.8B</b><span class="ty">Model</span></td><td>StartLux-Decision-0.8B trained with the same recipe. The base model is licensed CC BY-NC 4.0.</td><td><span class="lic nc">CC BY-NC 4.0</span></td><td><a href="https://huggingface.co/JevAgentHarness/AgentDecision-0.8B">Hugging Face</a></td></tr>
+          <tr><td><b>AgentDecisionBench</b><span class="ty">Dataset</span></td><td>Step-level questions with answer keys, every model's answers at the isolated and step levels, the DecisionGym task lists for the task level, and the paper's leaderboard.</td><td><span class="lic">CC BY 4.0</span></td><td><a href="https://huggingface.co/datasets/JevAgentHarness/AgentDecisionBench">Hugging Face</a></td></tr>
+          <tr><td><b>AgentDecision-train</b><span class="ty">Dataset</span></td><td>The training data: DecisionGym agent states with Jev's soft labels and gold labels, plus development splits.</td><td><span class="lic nc">CC BY-NC 4.0</span></td><td><a href="https://huggingface.co/datasets/JevAgentHarness/AgentDecision-train">Hugging Face</a></td></tr>
+          <tr><td><b>coding-agent-decisions</b><span class="ty">Dataset</span></td><td>Terminal-Bench 2.0 runs through the proxy: the decision model's inputs, every step with its tier and cost, per-task trials and the decision-point logs.</td><td><span class="lic nc">CC BY-NC 4.0</span></td><td><a href="https://huggingface.co/datasets/JevAgentHarness/coding-agent-decisions">Hugging Face</a></td></tr>
+          <tr><td><b>JevAgentHarness</b><span class="ty">Code</span></td><td>The routing proxy, the benchmark scripts, and in <code>research/</code> the code behind every experiment in the paper.</td><td><span class="lic">MIT</span></td><td><a href="https://github.com/JevAgentHarness/JevAgentHarness">GitHub</a></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ======================================================= citation -->
+<section id="citation">
+  <div class="wrap">
+    <div class="sec-head"><span class="eyebrow">Citation</span><h2>Cite this work</h2></div>
+    <div class="code"><button class="copy" type="button">Copy</button><pre><code>@article{zhu2026jevagentharness,
+  title   = {JevAgentHarness: Benchmarking, Deploying and Training Decision Models That Share Control with LLMs},
+  author  = {Zhu, Kunlun and Feng, Tao and Han, Xu and Wang, Heng and Yang, Ling and Tang, Xiangru and You, Jiaxuan and Ji, Heng},
+  journal = {arXiv preprint},
+  year    = {2026}
+}</code></pre></div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <a class="brand" href="#top"><img src="assets/logo.png" alt="" width="28" height="28"><span>JevAgentHarness</span></a>
+    <nav aria-label="Footer">
+      <a href="https://github.com/JevAgentHarness/JevAgentHarness/blob/main/paper/JevAgentHarness.pdf">Paper (PDF)</a>
+      <a href="https://github.com/JevAgentHarness/JevAgentHarness">Code</a>
+      <a href="https://huggingface.co/JevAgentHarness">Hugging Face</a>
+      <a href="https://github.com/JevAgentHarness/JevAgentHarness/blob/main/research/README.md">Reproduce the paper</a>
+      <a href="https://github.com/JevAgentHarness/JevAgentHarness/blob/main/bench/PROTOCOL.md">Benchmark protocol</a>
+    </nav>
+    <p class="fine">Code under MIT; models and datasets under the licences listed above. Figure 1 icons: Microsoft Fluent Emoji (MIT). The data behind the charts is in the <code>data/</code> folder of this site.</p>
+  </div>
+</footer>
+
+<div class="tip" id="tip" role="tooltip" aria-hidden="true"></div>
+
+<script>
+(function(){
+"use strict";
+/* ------------------------------------------------------------------ theme */
+var root=document.documentElement;
+try{var saved=localStorage.getItem("jah-theme"); if(saved==="light"||saved==="dark") root.setAttribute("data-theme",saved);}catch(e){}
+function isDark(){var t=root.getAttribute("data-theme"); if(t) return t==="dark"; return window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches;}
+document.getElementById("themeBtn").addEventListener("click",function(){
+  var next=isDark()?"light":"dark"; root.setAttribute("data-theme",next);
+  try{localStorage.setItem("jah-theme",next);}catch(e){}
+  rerenderAll();
+});
+if(window.matchMedia){ try{ matchMedia("(prefers-color-scheme: dark)").addEventListener("change",function(){rerenderAll();}); }catch(e){} }
+
+/* ------------------------------------------------------------------ nav highlight */
+var links=[].slice.call(document.querySelectorAll(".nav-links a"));
+var secs=links.map(function(a){return document.querySelector(a.getAttribute("href"));});
+if("IntersectionObserver" in window){
+  var vis={};
+  var io=new IntersectionObserver(function(es){
+    es.forEach(function(e){vis[e.target.id]=e.isIntersecting;});
+    var best=null; secs.forEach(function(s){ if(s&&vis[s.id]) best=s.id; });
+    links.forEach(function(a){ if(best&&a.getAttribute("href")==="#"+best) a.setAttribute("aria-current","true"); else a.removeAttribute("aria-current"); });
+  },{rootMargin:"-30% 0px -60% 0px", threshold:0});
+  secs.forEach(function(s){ if(s) io.observe(s); });
+}
+
+/* ------------------------------------------------------------------ copy buttons + tabs */
+document.querySelectorAll(".code").forEach(function(c){
+  var bar=document.createElement("div"); bar.className="bar"; var fn=c.querySelector(".fname"); var cp=c.querySelector(".copy");
+  bar.appendChild(fn||document.createElement("span")); if(cp) bar.appendChild(cp); c.insertBefore(bar,c.firstChild);
+});
+document.querySelectorAll(".code .copy").forEach(function(b){
+  b.addEventListener("click",function(){
+    var code=b.closest(".code").querySelector("pre code"); var txt=code.textContent;
+    function ok(){ b.textContent="Copied"; setTimeout(function(){b.textContent="Copy";},1600); }
+    function fallback(){ var r=document.createRange(); r.selectNodeContents(code); var s=window.getSelection(); s.removeAllRanges(); s.addRange(r); b.textContent="Selected: press Ctrl+C"; setTimeout(function(){b.textContent="Copy";},2400); }
+    try{ navigator.clipboard.writeText(txt).then(ok,fallback); }catch(e){ fallback(); }
+  });
+});
+var tabs=[].slice.call(document.querySelectorAll('[role="tab"]'));
+function selectTab(t){ tabs.forEach(function(x){ var on=x===t; x.setAttribute("aria-selected",on?"true":"false"); x.tabIndex=on?0:-1; document.getElementById(x.getAttribute("aria-controls")).hidden=!on; }); }
+tabs.forEach(function(t,i){
+  t.addEventListener("click",function(){selectTab(t);});
+  t.addEventListener("keydown",function(e){ var j=null; if(e.key==="ArrowRight") j=(i+1)%tabs.length; if(e.key==="ArrowLeft") j=(i-1+tabs.length)%tabs.length; if(j!==null){ e.preventDefault(); selectTab(tabs[j]); tabs[j].focus(); } });
+});
+
+/* ------------------------------------------------------------------ helpers */
+var NS="http://www.w3.org/2000/svg";
+function S(tag,attrs,parent){ var e=document.createElementNS(NS,tag); if(attrs) for(var k in attrs){ if(attrs[k]!==null&&attrs[k]!==undefined) e.setAttribute(k,attrs[k]); } if(parent) parent.appendChild(e); return e; }
+function T(parent,x,y,str,attrs){ var a=attrs||{}; a.x=x; a.y=y; var t=S("text",a,parent); t.textContent=str; return t; }
+function H(tag,attrs,kids){ var e=document.createElement(tag); if(attrs) for(var k in attrs){ var v=attrs[k]; if(v===null||v===undefined) continue; if(k==="class") e.className=v; else if(k==="text") e.textContent=v; else if(k==="style") e.style.cssText=v; else e.setAttribute(k,v);} (kids||[]).forEach(function(c){ if(c===null||c===undefined) return; e.appendChild(typeof c==="string"?document.createTextNode(c):c); }); return e; }
+function css(name){ return getComputedStyle(root).getPropertyValue(name).trim(); }
+function lin(d0,d1,r0,r1){ return function(v){ return r0+(v-d0)/(d1-d0)*(r1-r0); }; }
+function clamp(v,a,b){ return Math.max(a,Math.min(b,v)); }
+var MINUS="−";
+function sgn(v,d){ var s=Math.abs(v).toFixed(d===undefined?1:d); return (v<0&&Number(s)!==0?MINUS:"+")+s; }
+function f1(v){ return v===null||v===undefined?"–":Number(v).toFixed(1); }
+function pct0(v){ return Math.round(v)+"%"; }
+function money(v){ return "$"+(v<1?v.toPrecision(2):v.toFixed(2)); }
+function rangeTxt(a,b){ a=Math.round(a); b=Math.round(b); return a===b?String(a):a+"–"+b; }
+var measureCtx=document.createElement("canvas").getContext("2d");
+function textW(str,font){ measureCtx.font=font||"500 12px Inter, system-ui, sans-serif"; return measureCtx.measureText(str).width; }
+function clear(el){ while(el.firstChild) el.removeChild(el.firstChild); }
+function ticks(svg,list,x,fmt,y){ list.forEach(function(t,i){ T(svg,x(t),y||12,fmt?fmt(t):String(t),{"text-anchor":i===0?"start":i===list.length-1?"end":"middle",class:"ax-t"}); }); }
+function nn(v){ return Number.isInteger(v)?String(v):v.toFixed(1); }
+function pctS(v){ return (v<0?MINUS:"")+Math.abs(Math.round(v))+"%"; }
+function legendItem(svgDraw,label){ var it=H("span",{class:"it"}); var sv=S("svg",{width:18,height:14,viewBox:"0 0 18 14"}); svgDraw(sv); it.appendChild(sv); it.appendChild(document.createTextNode(label)); return it; }
+
+/* tooltip: values lead, labels follow; built with textContent only */
+var tip=document.getElementById("tip");
+function showTip(target,title,rows,note){
+  clear(tip);
+  if(title) tip.appendChild(H("div",{class:"tt",text:title}));
+  (rows||[]).forEach(function(r){
+    var key=H("span",{class:"key",style:"background:"+(r.color||"transparent")});
+    tip.appendChild(H("div",{class:"tr"},[key,H("span",{class:"v",text:r.v}),H("span",{class:"k",text:r.k})]));
+  });
+  if(note) tip.appendChild(H("div",{class:"tn",text:note}));
+  var x,y;
+  if(target&&target.clientX!==undefined){ x=target.clientX; y=target.clientY; }
+  else { var bb=target.getBoundingClientRect(); x=bb.left+bb.width/2; y=bb.top; }
+  tip.classList.add("on"); tip.setAttribute("aria-hidden","false");
+  var tw=tip.offsetWidth, th=tip.offsetHeight, vw=window.innerWidth, vh=window.innerHeight;
+  var left=x+14, top=y-th-12;
+  if(left+tw>vw-8) left=x-tw-14;
+  if(left<8) left=8;
+  if(top<8) top=y+18;
+  if(top+th>vh-8) top=vh-th-8;
+  tip.style.left=left+"px"; tip.style.top=top+"px";
+}
+function hideTip(){ tip.classList.remove("on"); tip.setAttribute("aria-hidden","true"); }
+window.addEventListener("scroll",hideTip,{passive:true});
+function bindTip(el,fn){
+  el.addEventListener("pointerenter",function(e){ fn(e); });
+  el.addEventListener("pointermove",function(e){ fn(e); });
+  el.addEventListener("pointerleave",hideTip);
+  el.addEventListener("focus",function(){ fn(el); });
+  el.addEventListener("blur",hideTip);
+}
+function seg(id,onChange){
+  var g=document.getElementById(id); var bs=[].slice.call(g.querySelectorAll("button"));
+  bs.forEach(function(b){ b.addEventListener("click",function(){ bs.forEach(function(x){x.setAttribute("aria-pressed",x===b?"true":"false");}); onChange(b.getAttribute("data-v")); }); });
+}
+function makeTable(host,cols,rows,opts){
+  clear(host); opts=opts||{};
+  var tb=H("table",{class:"tbl"}); var thead=H("thead"); var tr=H("tr");
+  var sortKey=opts.sortKey||null, dir=opts.dir||-1;
+  cols.forEach(function(c){
+    var th=H("th",{scope:"col"});
+    if(opts.sortable&&c.sort!==false){
+      var b=H("button",{type:"button",text:c.label}); th.appendChild(b);
+      th.setAttribute("aria-sort", c.key===sortKey?(dir<0?"descending":"ascending"):"none");
+      b.addEventListener("click",function(){ if(sortKey===c.key) dir=-dir; else { sortKey=c.key; dir=c.text?1:-1; } opts.sortKey=sortKey; opts.dir=dir; makeTable(host,cols,rows,opts); });
+    } else th.textContent=c.label;
+    if(c.title) th.title=c.title;
+    tr.appendChild(th);
+  });
+  thead.appendChild(tr); tb.appendChild(thead);
+  var data=rows.slice();
+  if(sortKey){ var col=cols.filter(function(c){return c.key===sortKey;})[0];
+    data.sort(function(a,b){ var va=col.get(a), vb=col.get(b); var na=va===null||va===undefined, nb=vb===null||vb===undefined;
+      if(na&&nb) return 0; if(na) return 1; if(nb) return -1; if(typeof va==="string") return dir*va.localeCompare(vb); return dir*(va-vb); }); }
+  var tbody=H("tbody");
+  data.forEach(function(r){
+    var row=H("tr",{class:opts.rowClass?opts.rowClass(r):null});
+    cols.forEach(function(c){
+      var v=c.get(r); var td=H("td");
+      if(c.render){ var out=c.render(r); if(typeof out==="string") td.textContent=out; else td.appendChild(out); }
+      else if(v===null||v===undefined){ td.textContent="–"; td.className="na"; }
+      else { td.textContent=c.fmt?c.fmt(v):String(v); if(typeof v==="number") td.className="n"; }
+      row.appendChild(td);
+    });
+    tbody.appendChild(row);
+  });
+  tb.appendChild(tbody); host.appendChild(tb);
+}
+
+/* ------------------------------------------------------------------ data loading */
+var NAMES=["leaderboard","frontier","module_map","hard_settings","tb2","dev_modes"];
+function loadBundle(){ return new Promise(function(res,rej){ if(window.JAH_DATA) return res(window.JAH_DATA); var s=document.createElement("script"); s.src="data/bundle.js"; s.onload=function(){ window.JAH_DATA?res(window.JAH_DATA):rej(new Error("bundle empty")); }; s.onerror=rej; document.head.appendChild(s); }); }
+function loadData(){
+  if(location.protocol==="file:") return loadBundle();
+  return Promise.all(NAMES.map(function(n){ return fetch("data/"+n+".json").then(function(r){ if(!r.ok) throw new Error(n+" "+r.status); return r.json(); }); }))
+    .then(function(arr){ var o={}; NAMES.forEach(function(n,i){o[n]=arr[i];}); return o; })
+    .catch(function(){ return loadBundle(); });
+}
+
+var D=null, renderers=[];
+function rerenderAll(){ if(!D) return; renderers.forEach(function(r){ try{ r(); }catch(e){ console.error(e); } }); }
+function onResize(el,fn){ var w=0, t=null; if(!("ResizeObserver" in window)){ window.addEventListener("resize",fn); return; }
+  new ResizeObserver(function(es){ var nw=Math.round(es[0].contentRect.width); if(nw===w) return; w=nw; clearTimeout(t); t=setTimeout(fn,60); }).observe(el); }
+
+/* ------------------------------------------------------------------ leaderboard model */
+var METRICS={
+  l1:["L1","isolated: 3,991 BFCL v4 + When2Call questions (pooled)","accuracy (%)"],
+  l1b:["L1","isolated: BFCL v4 tool choice only","accuracy (%)"],
+  l2s:["L2","DecisionGym-Shift open-loop states (100 tasks)","step accuracy, all states (%)"],
+  l2sm:["L2","DecisionGym-Shift open-loop states, must-ask subset","step accuracy, must-ask states (%)"],
+  l3s:["L3","DecisionGym-Shift closed-loop (200 tasks)","task success (%)"],
+  l2c:["L2","common states (200 Stage-2 tasks)","step accuracy (%)"],
+  l3c:["L3","DecisionGym closed-loop (first 200 Stage-2 tasks)","task success (%)"]
+};
+var KIND_GROUP={ours:"ours",teacher:"other",off_the_shelf:"other",ablation:"variant",llm:"llm",control:"llm"};
+var KIND_LABEL={ours:"Ours",teacher:"Teacher",off_the_shelf:"Off-the-shelf",ablation:"Training variant",llm:"LLM",control:"Ranker"};
+function buildLB(LB){
+  var idx={};
+  LB.rows.forEach(function(r){ var k=r.model+"|"+r.level+"|"+r.task_set+"|"+r.metric; if(!(k in idx)) idx[k]=r; });
+  var models=LB.models.map(function(m){
+    var o={id:m.model,name:m.name,kind:m.kind,group:KIND_GROUP[m.kind]||"other",notes:m.notes,v:{},keys:{}};
+    Object.keys(METRICS).forEach(function(mk){ var M=METRICS[mk]; var r=idx[m.model+"|"+M[0]+"|"+M[1]+"|"+M[2]]; o.v[mk]=r?r.value_num:null; o.keys[mk]=r?r.tex_key:null; });
+    return o;
+  });
+  return models;
+}
+
+/* ------------------------------------------------------------------ KPI tiles */
+function renderKPIs(){
+  var host=document.getElementById("kpis"); clear(host);
+  var lb=D.lbModels, by={}; lb.forEach(function(m){by[m.id]=m;});
+  var fr=D.frontier, rows=fr.fig4b.rows.slice();
+  var best=rows.slice().sort(function(a,b){return b.L1-a.L1;})[0];
+  var tbS=D.tb2.settings.filter(function(s){return s.id==="flash_lite";})[0];
+  var hs=["dsh","mswe","pi"].map(function(h){ var k=Object.keys(tbS.results).filter(function(x){return x.indexOf(h+":")===0&&x.indexOf("strong")<0;})[0]; return tbS.results[k]; });
+  var sav=hs.map(function(r){return r.cost_saving*100;});
+  var pts={}; fr.fig4a.points.forEach(function(p){pts[p.slug]=p;});
+  function tile(tag,v,small,k){ var vEl=H("div",{class:"v"},[v]); if(small) vEl.appendChild(H("small",{text:" "+small})); return H("div",{class:"kpi"},[H("span",{class:"tag",text:tag}),vEl,H("div",{class:"k",text:k})]); }
+  host.appendChild(tile("Trained model", f1(by.e12.v.l3s)+"%", "vs "+f1(by.jev.v.l3s)+"%",
+    "of shifted tasks solved when AgentDecision-4B made the tool choices, against Jev, the model it learned from."));
+  host.appendChild(tile("Benchmark", f1(best.L3)+"%", null,
+    "of shifted tasks solved with "+best.name+", the most accurate on isolated tool choice ("+f1(best.L1)+"%) of the models tested inside the agent."));
+  host.appendChild(tile("Coding agents", rangeTxt(Math.min.apply(null,sav),Math.max.apply(null,sav))+"%", "less",
+    "spent on LLM calls by three harnesses on Terminal-Bench 2.0, staying within 3 points of their success."));
+  host.appendChild(tile("Serving cost", money(pts.e12.usd_per_1k), "per 1,000",
+    "decisions for AgentDecision-4B on one GPU, against "+money(pts.jev.usd_per_1k)+" for Jev's API."));
+}
+
+/* ------------------------------------------------------------------ A. leaderboard levels */
+var lbState={set:"shift",show:{ours:true,other:true,variant:false}};
+function lvMark(svg,lv,x,y,surf,scale){
+  var c=css("--lv"+lv); scale=scale||1;
+  if(lv===1){ S("circle",{cx:x,cy:y,r:5*scale,fill:surf,stroke:c,"stroke-width":2.4},svg); }
+  else if(lv===2){ var r=6*scale; S("path",{d:"M"+x+" "+(y-r)+"L"+(x+r)+" "+y+"L"+x+" "+(y+r)+"L"+(x-r)+" "+y+"Z",fill:c,stroke:surf,"stroke-width":1.5},svg); }
+  else { S("circle",{cx:x,cy:y,r:5.5*scale,fill:c,stroke:surf,"stroke-width":2},svg); }
+}
+function renderLeaderboard(){
+  var host=document.getElementById("lb-chart"); clear(host);
+  var surf=css("--surface"), grid=css("--grid"), axis=css("--axis"), muted=css("--muted");
+  var L2=lbState.set==="shift"?"l2s":"l2c", L3=lbState.set==="shift"?"l3s":"l3c";
+  var rows=D.lbModels.filter(function(m){ return lbState.show[m.group]&&(m.v[L2]!==null||m.v[L3]!==null); });
+  rows.sort(function(a,b){ var x=a.v[L3], y=b.v[L3]; if(x===null&&y===null) return (b.v[L2]||0)-(a.v[L2]||0); if(x===null) return 1; if(y===null) return -1; return y-x||(b.v[L2]||0)-(a.v[L2]||0); });
+  // legend
+  var lg=document.getElementById("lb-legend"); clear(lg);
+  var lvNames=["L1 isolated questions (pooled accuracy)", lbState.set==="shift"?"L2 step level (shifted states)":"L2 step level (common states)", lbState.set==="shift"?"L3 task level (shifted tasks)":"L3 task level (new DecisionGym tasks)"];
+  [1,2,3].forEach(function(lv){ lg.appendChild(legendItem(function(sv){ lvMark(sv,lv,9,7,surf); },lvNames[lv-1])); });
+  var wrap=H("div",{class:"rows"});
+  // header with axis
+  var hdr=H("div",{class:"row hdr"}); hdr.appendChild(H("div",{class:"nm",style:"color:var(--muted);font-size:12px",text:"Model"}));
+  var axHost=H("div"); var axSvg=S("svg",{height:18}); axHost.appendChild(axSvg); hdr.appendChild(axHost);
+  hdr.appendChild(H("div",{class:"val",style:"color:var(--muted);font-weight:500;font-size:12px",text:"L3 %"})); wrap.appendChild(hdr);
+  host.appendChild(wrap);
+  var W=Math.max(120,axHost.getBoundingClientRect().width||300); var pad=8; var x=lin(0,100,pad,W-pad);
+  axSvg.setAttribute("viewBox","0 0 "+W+" 18"); axSvg.setAttribute("width",W);
+  ticks(axSvg,[0,25,50,75,100],x);
+  rows.forEach(function(m){
+    var r=H("div",{class:"row"+(m.group==="ours"?" ours":""),tabindex:"0"});
+    var nm=H("div",{class:"nm"},[m.name]); if(m.kind==="ours"||m.kind==="teacher"||m.kind==="ablation") nm.appendChild(H("span",{class:"kind"+(m.group==="ours"?" ours":""),text:m.kind==="ablation"?"variant":KIND_LABEL[m.kind]}));
+    r.appendChild(nm);
+    var tw=H("div"); var sv=S("svg",{viewBox:"0 0 "+W+" 24",width:W,height:24,"aria-hidden":"true"}); tw.appendChild(sv); r.appendChild(tw);
+    [0,25,50,75,100].forEach(function(t){ S("line",{x1:x(t),x2:x(t),y1:2,y2:22,stroke:t===0?axis:grid,"stroke-width":1},sv); });
+    var vals=[m.v.l1,m.v[L2],m.v[L3]].filter(function(v){return v!==null;});
+    if(vals.length>1){ S("line",{x1:x(Math.min.apply(null,vals)),x2:x(Math.max.apply(null,vals)),y1:12,y2:12,stroke:muted,"stroke-opacity":.45,"stroke-width":2,"stroke-linecap":"round"},sv); }
+    if(m.v.l1!==null) lvMark(sv,1,x(m.v.l1),12,surf);
+    if(m.v[L2]!==null) lvMark(sv,2,x(m.v[L2]),12,surf);
+    if(m.v[L3]!==null) lvMark(sv,3,x(m.v[L3]),12,surf);
+    r.appendChild(H("div",{class:"val"+(m.v[L3]===null?" na":""),text:m.v[L3]===null?"–":f1(m.v[L3])}));
+    bindTip(r,function(e){ showTip(e,m.name,[
+      {v:m.v.l1===null?"–":f1(m.v.l1)+"%",k:"L1 isolated, pooled",color:css("--lv1")},
+      {v:m.v.l1b===null?"–":f1(m.v.l1b)+"%",k:"L1 BFCL tool choice",color:css("--lv1")},
+      {v:m.v[L2]===null?"–":f1(m.v[L2])+"%",k:"L2 step level",color:css("--lv2")},
+      {v:m.v[L3]===null?"–":f1(m.v[L3])+"%",k:"L3 task success",color:css("--lv3")}], KIND_LABEL[m.kind]+(m.notes?". "+m.notes:"")); });
+    wrap.appendChild(r);
+  });
+  var fl=D.frontier.fig4b.flash_alone_l3;
+  var note=document.getElementById("lb-note"); clear(note);
+  if(lbState.set==="shift"){
+    note.appendChild(document.createTextNode("Shifted tasks rename the tools, add distractors and add new kinds of task. The agent LLM alone (Gemini 3.5 Flash, no decision model) solved "));
+    note.appendChild(H("b",{text:f1(fl)+"%"})); note.appendChild(document.createTextNode(" of them, so L3 shows how much success a decision model keeps when it makes the tool choices."));
+  } else {
+    note.appendChild(document.createTextNode("Common states come from 200 new DecisionGym tasks like those the trained models learned from. Here the trained models reach the ceiling, which is why the paper's tables use the shifted tasks."));
+  }
+}
+function renderLBTable(kind){
+  var rows=D.lbModels.filter(function(m){ return (kind==="all"||m.group===kind)&&Object.keys(m.v).some(function(k){return m.v[k]!==null;}); });
+  var host=document.getElementById("lbt");
+  var cols=[
+    {key:"name",label:"Model",text:true,get:function(m){return m.name;}},
+    {key:"kind",label:"Kind",text:true,get:function(m){return KIND_LABEL[m.kind]||m.kind;},render:function(m){ return H("span",{class:"kind"+(m.group==="ours"?" ours":""),style:"margin-left:0",text:KIND_LABEL[m.kind]||m.kind}); }},
+    {key:"l1",label:"L1 pooled",title:"Isolated questions: 3,991 BFCL v4 + When2Call items, accuracy (%)",get:function(m){return m.v.l1;},fmt:f1},
+    {key:"l1b",label:"L1 BFCL tool",title:"Isolated questions: BFCL v4 tool choice only, accuracy (%)",get:function(m){return m.v.l1b;},fmt:f1},
+    {key:"l2s",label:"L2 shifted",title:"Step accuracy on DecisionGym-Shift states (%)",get:function(m){return m.v.l2s;},fmt:f1},
+    {key:"l2sm",label:"L2 must-ask",title:"Step accuracy on must-ask states of DecisionGym-Shift (%)",get:function(m){return m.v.l2sm;},fmt:f1},
+    {key:"l3s",label:"L3 shifted",title:"Task success on 200 shifted tasks (%)",get:function(m){return m.v.l3s;},fmt:f1},
+    {key:"l2c",label:"L2 common",title:"Step accuracy on the common states (%)",get:function(m){return m.v.l2c;},fmt:f1},
+    {key:"l3c",label:"L3 common",title:"Task success on the first 200 new DecisionGym tasks (%)",get:function(m){return m.v.l3c;},fmt:f1}
+  ];
+  if(!renderLBTable.opts) renderLBTable.opts={sortable:true,sortKey:"l3s",dir:-1,rowClass:function(m){return m.group==="ours"?"ours":null;}};
+  makeTable(host,cols,rows,renderLBTable.opts);
+  var n=document.getElementById("lbt-sub"); n.textContent=rows.length+" models with their numbers at each level (%). Click a column to sort. A dash means the model was not run at that level.";
+}
+
+/* ------------------------------------------------------------------ B1. frontier */
+var SHORT={e12:"AgentDecision-4B",e28:"AgentDecision-0.8B",jev:"Jev",oaidec:"OpenAI Decisions",
+  "sl0.8b":"StartLux 0.8B",sl2b:"StartLux 2B",sl4b:"StartLux 4B",sl9b:"StartLux 9B",sl27b:"StartLux 27B",
+  intern:"Intern-Decision-4B",decider:"decider-4b",openjev:"OpenJev",openjevhf:"OpenJev-27B",jevk5:"JevK5",
+  flash:"Flash",lite:"Flash-Lite",flashfc:"Flash, own tool call"};
+function grpColor(g){ return g==="ours"?css("--violet"):g==="llm"?css("--amber"):css("--teal"); }
+function drawPoint(g,p,X,Y,surf,big){
+  var c=grpColor(p.group), r=p.group==="ours"?6.5:5.5; if(big) r+=1.5;
+  if(p.marker.indexOf("diamond")===0){ var d=r+1.5; S("path",{d:"M"+X+" "+(Y-d)+"L"+(X+d)+" "+Y+"L"+X+" "+(Y+d)+"L"+(X-d)+" "+Y+"Z",fill:p.marker==="diamond-open"?surf:c,stroke:p.marker==="diamond-open"?c:surf,"stroke-width":p.marker==="diamond-open"?2:2},g); }
+  else { if(p.hosted) S("circle",{cx:X,cy:Y,r:r+4,fill:"none",stroke:c,"stroke-width":1.5},g); S("circle",{cx:X,cy:Y,r:r,fill:c,stroke:surf,"stroke-width":2},g); }
+}
+function placeLabels(items,obstacles,bounds){
+  var placed=[]; var out=[];
+  function hit(b){ for(var i=0;i<placed.length;i++){ var q=placed[i]; if(b.x0<q.x1&&b.x1>q.x0&&b.y0<q.y1&&b.y1>q.y0) return true; }
+    for(var j=0;j<obstacles.length;j++){ var o=obstacles[j]; if(o.id===b.id) continue; if(b.x0<o.x1&&b.x1>o.x0&&b.y0<o.y1&&b.y1>o.y0) return true; }
+    return b.x0<bounds.x0||b.x1>bounds.x1||b.y0<bounds.y0||b.y1>bounds.y1; }
+  items.forEach(function(it){
+    var w=it.w, h=14, g=it.r+5, x=it.x, y=it.y;
+    var c=[[x+g,y-h/2],[x-g-w,y-h/2],[x-w/2,y-g-h],[x-w/2,y+g],[x+g-2,y-g-h+3],[x+g-2,y+g-3],[x-g-w+2,y-g-h+3],[x-g-w+2,y+g-3]];
+    for(var i=0;i<c.length;i++){ var b={x0:c[i][0],y0:c[i][1],x1:c[i][0]+w,y1:c[i][1]+h,id:it.id}; if(!hit(b)){ placed.push(b); out.push({it:it,x:b.x0,y:b.y1-3.5}); return; } }
+  });
+  return out;
+}
+function renderFrontier(){
+  var host=document.getElementById("fr-chart"); clear(host);
+  var F=D.frontier.fig4a, pts=F.points.slice();
+  var by={}; pts.forEach(function(p){by[p.slug]=p;});
+  var surf=css("--surface"), grid=css("--grid"), axis=css("--axis"), ink2=css("--ink-2"), muted=css("--muted");
+  var W=Math.max(300,host.getBoundingClientRect().width), narrow=W<560;
+  var Hh=narrow?380:Math.min(470,Math.round(W*0.52));
+  var m={l:narrow?40:52,r:narrow?10:18,t:14,b:44};
+  var svg=S("svg",{viewBox:"0 0 "+W+" "+Hh,width:W,height:Hh,role:"img","aria-label":"Scatter plot of accuracy on isolated questions against cost per 1,000 decisions, log scale."},host);
+  var xs=lin(-3,0.25,m.l,W-m.r), ys=lin(68,90,Hh-m.b,m.t);
+  function X(p){ return xs(p.log10_usd_per_decision+3); } function Y(p){ return ys(p.acc); }
+  var ax=S("g",{class:"ax"},svg);
+  [70,75,80,85,90].forEach(function(t){ S("line",{x1:m.l,x2:W-m.r,y1:ys(t),y2:ys(t),stroke:grid},ax); T(ax,m.l-8,ys(t)+4,String(t),{"text-anchor":"end"}); });
+  [[-3,"$0.001"],[-2,"$0.01"],[-1,"$0.1"],[0,"$1"]].forEach(function(t){ var xx=xs(t[0]+0); S("line",{x1:xx,x2:xx,y1:m.t,y2:Hh-m.b,stroke:grid},ax); T(ax,xx,Hh-m.b+17,t[1],{"text-anchor":"middle"});
+    for(var k=2;k<10;k++){ var mx=xs(t[0]+Math.log10(k)); if(mx<W-m.r) S("line",{x1:mx,x2:mx,y1:Hh-m.b,y2:Hh-m.b+4,stroke:axis},ax); } });
+  S("line",{x1:m.l,x2:W-m.r,y1:Hh-m.b,y2:Hh-m.b,stroke:axis},ax);
+  T(svg,(m.l+W-m.r)/2,Hh-6,"cost per 1,000 decisions (US$, log scale)",{"text-anchor":"middle",class:"ax-title"});
+  T(svg,12,m.t+(Hh-m.b-m.t)/2,"accuracy on isolated questions (%)",{"text-anchor":"middle",class:"ax-title",transform:"rotate(-90 12 "+(m.t+(Hh-m.b-m.t)/2)+")"});
+  T(svg,m.l+8,m.t+14,"← cheaper    ↑ more accurate",{class:"ax-t"});
+  // StartLux size ladder
+  var lad=["sl0.8b","sl2b","sl4b","sl9b","sl27b"].map(function(s){return by[s];});
+  S("path",{d:"M"+lad.map(function(p){return X(p)+" "+Y(p);}).join(" L"),fill:"none",stroke:css("--teal"),"stroke-opacity":.35,"stroke-width":1.5},svg);
+  // frontier
+  var fr=F.frontier.map(function(s){return by[s];});
+  S("path",{d:"M"+fr.map(function(p){return X(p)+" "+Y(p);}).join(" L"),fill:"none",stroke:ink2,"stroke-width":1.3,"stroke-dasharray":"5 4","stroke-opacity":.8},svg);
+  var order=["e12","e28","jev","oaidec","flash","lite","flashfc","sl27b","sl0.8b","sl9b","sl4b","sl2b","intern","openjevhf","openjev","decider","jevk5"];
+  var g=S("g",null,svg);
+  pts.slice().sort(function(a,b){ return (a.group==="ours")-(b.group==="ours"); }).forEach(function(p){ drawPoint(g,p,X(p),Y(p),surf); });
+  // labels
+  var obstacles=pts.map(function(p){ var r=(p.group==="ours"?6.5:5.5)+(p.hosted&&p.marker==="disc"?4:2); return {id:p.slug,x0:X(p)-r,x1:X(p)+r,y0:Y(p)-r,y1:Y(p)+r}; });
+  var items=order.map(function(s){ var p=by[s]; var f=(p.group==="ours"?"650 ":"500 ")+"12px Inter, system-ui, sans-serif"; return {id:s,x:X(p),y:Y(p),r:(p.hosted&&p.marker==="disc")?10:7,w:textW(SHORT[s],f)+4,p:p}; });
+  var lab=placeLabels(items,obstacles,{x0:m.l+2,x1:W-m.r,y0:m.t+18,y1:Hh-m.b-2});
+  var lg=S("g",null,svg);
+  lab.forEach(function(l){ var t=T(lg,l.x,l.y,SHORT[l.it.id],{class:"dlabel"+(l.it.p.group==="ours"?" ours":l.it.p.group==="dm"?" muted":"")}); });
+  // front label
+  // hover: nearest point
+  var hl=S("circle",{r:11,fill:"none",stroke:css("--ink"),"stroke-width":1.5,opacity:0},svg);
+  var hit=S("rect",{x:m.l,y:m.t,width:W-m.l-m.r,height:Hh-m.t-m.b,fill:"transparent",tabindex:"0","aria-label":"Chart area: move the pointer or use the arrow keys to read each model"},svg);
+  var kIdx=-1, ordered=pts.slice().sort(function(a,b){return a.log10_usd_per_decision-b.log10_usd_per_decision;});
+  function tipFor(p,ev){
+    hl.setAttribute("cx",X(p)); hl.setAttribute("cy",Y(p)); hl.setAttribute("opacity",1);
+    var basis=p.basis==="e30"?("served on one "+F.meta.gpu+" GPU"+(p.prec?", "+p.prec:"")+(p.engine?", "+p.engine.replace(/\\_/g,"_"):"")):(p.group==="llm"?"API list price":"hosted API, list price");
+    var rows=[{v:f1(p.acc)+"%",k:"accuracy, 3,991 isolated questions",color:grpColor(p.group)},{v:money(p.usd_per_1k),k:"per 1,000 decisions",color:grpColor(p.group)}];
+    if(p.lat_p50) rows.push({v:Math.round(p.lat_p50)+" ms",k:"median latency",color:"transparent"});
+    showTip(ev,p.name,rows,basis+(F.frontier.indexOf(p.slug)>=0?". On the frontier.":""));
+  }
+  hit.addEventListener("pointermove",function(e){ var bb=svg.getBoundingClientRect(); var sx=(e.clientX-bb.left)*(W/bb.width), sy=(e.clientY-bb.top)*(Hh/bb.height);
+    var best=null,bd=1e9; pts.forEach(function(p){ var d=Math.hypot(X(p)-sx,Y(p)-sy); if(d<bd){bd=d;best=p;} });
+    if(best&&bd<34) tipFor(best,e); else { hl.setAttribute("opacity",0); hideTip(); } });
+  hit.addEventListener("pointerleave",function(){ hl.setAttribute("opacity",0); hideTip(); });
+  hit.addEventListener("keydown",function(e){ if(e.key!=="ArrowRight"&&e.key!=="ArrowLeft") return; e.preventDefault(); kIdx=(kIdx+(e.key==="ArrowRight"?1:-1)+ordered.length)%ordered.length; var p=ordered[kIdx]; var bb=svg.getBoundingClientRect(); tipFor(p,{clientX:bb.left+X(p)*bb.width/W,clientY:bb.top+Y(p)*bb.height/Hh}); });
+  hit.addEventListener("blur",function(){ hl.setAttribute("opacity",0); hideTip(); });
+  // legend
+  var lgd=document.getElementById("fr-legend"); clear(lgd);
+  lgd.appendChild(legendItem(function(sv){ drawPoint(sv,{group:"ours",marker:"disc"},9,7,surf); },"our models"));
+  lgd.appendChild(legendItem(function(sv){ drawPoint(sv,{group:"dm",marker:"disc"},9,7,surf); },"other decision models"));
+  lgd.appendChild(legendItem(function(sv){ S("circle",{cx:9,cy:7,r:6,fill:"none",stroke:css("--teal"),"stroke-width":1.5},sv); S("circle",{cx:9,cy:7,r:2.5,fill:css("--teal")},sv); },"hosted API (ring)"));
+  lgd.appendChild(legendItem(function(sv){ drawPoint(sv,{group:"llm",marker:"diamond"},9,7,surf); },"LLM answering the question"));
+  lgd.appendChild(legendItem(function(sv){ drawPoint(sv,{group:"llm",marker:"diamond-open"},9,7,surf); },"LLM's own tool call"));
+  lgd.appendChild(legendItem(function(sv){ S("line",{x1:1,x2:17,y1:7,y2:7,stroke:ink2,"stroke-width":1.3,"stroke-dasharray":"4 3"},sv); },"cost–accuracy frontier"));
+  lgd.appendChild(legendItem(function(sv){ S("line",{x1:1,x2:17,y1:7,y2:7,stroke:css("--teal"),"stroke-opacity":.45,"stroke-width":1.5},sv); },"StartLux sizes"));
+}
+function frontierText(){
+  var F=D.frontier.fig4a, by={}; F.points.forEach(function(p){by[p.slug]=p;});
+  var r4=Math.round(by.jev.usd_per_1k/by.e12.usd_per_1k), r08=Math.round(by.jev.usd_per_1k/by.e28.usd_per_1k);
+  var onF=F.frontier.indexOf("e12")>=0&&F.frontier.indexOf("e28")>=0;
+  document.getElementById("fr-title").textContent=(onF?"AgentDecision-4B and -0.8B are on the cost–accuracy frontier, ":"AgentDecision-4B and -0.8B ")+"at about "+r4+" and "+r08+" times less per decision than Jev";
+  document.getElementById("fr-sub").textContent="Accuracy on "+F.items_note+" against the cost of 1,000 decisions. Open models are served on one "+F.meta.gpu+" GPU at their cheapest precision within "+F.meta.margin_pt+" point of their accuracy. Hosted APIs and LLMs are at list price. Flash answered "+f1(by.flash.acc)+"% at "+money(by.flash.usd_per_1k)+" per 1,000.";
+  makeTable(document.getElementById("fr-table"),[
+    {key:"name",label:"Model",get:function(p){return p.name;}},
+    {key:"acc",label:"Accuracy (%)",get:function(p){return p.acc;},fmt:f1},
+    {key:"c",label:"$ per 1,000",get:function(p){return p.usd_per_1k;},fmt:function(v){return v.toPrecision(2);}},
+    {key:"b",label:"Cost basis",get:function(p){return p.basis==="e30"?("one GPU, "+(p.prec||"")):"list price";}},
+    {key:"l",label:"Median latency (ms)",get:function(p){return p.lat_p50||null;},fmt:function(v){return String(Math.round(v));}},
+    {key:"f",label:"On frontier",get:function(p){return F.frontier.indexOf(p.slug)>=0?"yes":"";}}
+  ],F.points.slice().sort(function(a,b){return a.usd_per_1k-b.usd_per_1k;}),{sortable:true,sortKey:"c",dir:1,rowClass:function(p){return p.group==="ours"?"ours":null;}});
+  var L=D.frontier.links; document.getElementById("fr-link-e30").href=L.e30; document.getElementById("fr-link-e9").href=L.e9; document.getElementById("sl-link").href=L.e21;
+}
+
+/* ------------------------------------------------------------------ B2. slope chart */
+function renderSlope(){
+  var host=document.getElementById("sl-chart"); clear(host);
+  var B=D.frontier.fig4b, rows=B.rows;
+  var surf=css("--surface"), grid=css("--grid"), axis=css("--axis"), muted=css("--muted"), ink2=css("--ink-2");
+  var W=Math.max(300,host.getBoundingClientRect().width), narrow=W<560;
+  var lblFont=(narrow?"650 11.5px":"650 12px")+" Inter, system-ui, sans-serif";
+  var maxLbl=Math.max.apply(null,rows.map(function(r){ return textW(f1(r.L3)+"  "+(narrow?(SHORT[r.slug]||r.name):r.name),lblFont); }));
+  var Hh=narrow?400:440, m={l:36,r:Math.ceil(maxLbl)+34,t:58,b:18};
+  var svg=S("svg",{viewBox:"0 0 "+W+" "+Hh,width:W,height:Hh,role:"img","aria-label":"Slope chart of the same decision models at the three levels."},host);
+  var cols=["L1","L2","L3"], cx=lin(0,2,m.l+14,W-m.r);
+  var y=lin(30,100,Hh-m.b,m.t);
+  var ax=S("g",{class:"ax"},svg);
+  [30,40,50,60,70,80,90,100].forEach(function(t){ S("line",{x1:m.l,x2:W-m.r+8,y1:y(t),y2:y(t),stroke:grid},ax); T(ax,m.l-6,y(t)+4,String(t),{"text-anchor":"end"}); });
+  var heads=[["L1 isolated","BFCL tool choice"],["L2 step level","shifted states"],["L3 task level","shifted tasks"]];
+  cols.forEach(function(c,i){
+    S("line",{x1:cx(i),x2:cx(i),y1:m.t-6,y2:Hh-m.b,stroke:axis},svg);
+    var vals=rows.map(function(r){return r[c];}); var spread=Math.max.apply(null,vals)-Math.min.apply(null,vals);
+    var anc=i===0?"start":i===2?"end":"middle", tight=(cx(1)-cx(0))<150;
+    T(svg,cx(i),m.t-38,tight?c:heads[i][0],{"text-anchor":anc,class:"ax-title","font-weight":"600",fill:css("--ink")});
+    T(svg,cx(i),m.t-24,tight?spread.toFixed(1):(heads[i][1]+", spread "+spread.toFixed(1)+" pt"),{"text-anchor":anc,class:"ax-t"});
+  });
+  var colorOf=function(r){ return r.group==="ours"?css("--violet"):r.slug==="jev"?css("--teal"):muted; };
+  var gl=S("g",null,svg), gh=S("g",null,svg);
+  var paths={};
+  rows.slice().sort(function(a,b){ var w=function(r){return r.group==="ours"?2:r.slug==="jev"?1:0;}; return w(a)-w(b); }).forEach(function(r){
+    var c=colorOf(r), strong=r.group==="ours"||r.slug==="jev";
+    var d="M"+cols.map(function(k,i){return cx(i)+" "+y(r[k]);}).join(" L");
+    var g=S("g",{"data-slug":r.slug},gl);
+    var p=S("path",{d:d,fill:"none",stroke:c,"stroke-width":strong?2.6:1.6,"stroke-opacity":strong?1:.55,"stroke-linejoin":"round"},g);
+    cols.forEach(function(k,i){ S("circle",{cx:cx(i),cy:y(r[k]),r:strong?4.5:3.5,fill:c,stroke:surf,"stroke-width":1.5},g); });
+    paths[r.slug]=g;
+  });
+  // right labels with relaxation + leader lines
+  var labs=rows.map(function(r){ return {r:r,y:y(r.L3),ly:y(r.L3)}; }).sort(function(a,b){return a.y-b.y;});
+  var gap=15;
+  for(var it=0;it<200;it++){ var moved=false; for(var i=1;i<labs.length;i++){ var d=labs[i].ly-labs[i-1].ly; if(d<gap){ var s=(gap-d)/2; labs[i-1].ly-=s; labs[i].ly+=s; moved=true; } }
+    if(labs[0].ly<m.t) { var sh=m.t-labs[0].ly; labs.forEach(function(l){l.ly+=sh;}); }
+    if(labs[labs.length-1].ly>Hh-4){ var sh2=labs[labs.length-1].ly-(Hh-4); labs.forEach(function(l){l.ly-=sh2;}); }
+    if(!moved) break; }
+  var x0=cx(2);
+  labs.forEach(function(l){
+    var r=l.r, c=colorOf(r);
+    S("path",{d:"M"+(x0+6)+" "+l.y+" L"+(x0+16)+" "+l.ly+" L"+(x0+20)+" "+l.ly,fill:"none",stroke:axis,"stroke-width":1},svg);
+    var name=narrow?(SHORT[r.slug]||r.name):r.name;
+    var t=T(svg,x0+24,l.ly+4,f1(r.L3)+"  "+name,{class:"dlabel"+(r.group==="ours"?" ours":""),"font-size":narrow?11.5:12});
+    t.setAttribute("tabindex","0");
+    var tipF=function(ev){ highlight(r.slug); showTip(ev,r.name,[{v:f1(r.L1)+"%",k:"L1 BFCL tool choice",color:css("--lv1")},{v:f1(r.L2)+"%",k:"L2 step accuracy, shifted states",color:css("--lv2")},{v:f1(r.L3)+"%",k:"L3 task success, shifted tasks"+(r.L3_n&&r.L3_n!==200?" ("+Math.round(r.L3_n)+" tasks run)":""),color:css("--lv3")}]); };
+    t.addEventListener("pointerenter",tipF); t.addEventListener("pointermove",tipF); t.addEventListener("focus",function(){tipF(t);});
+    t.addEventListener("pointerleave",function(){highlight(null);hideTip();}); t.addEventListener("blur",function(){highlight(null);hideTip();});
+    var hp=S("path",{d:"M"+cols.map(function(k,i){return cx(i)+" "+y(r[k]);}).join(" L"),fill:"none",stroke:"transparent","stroke-width":14,"pointer-events":"stroke"},gh);
+    hp.addEventListener("pointerenter",tipF); hp.addEventListener("pointermove",tipF); hp.addEventListener("pointerleave",function(){highlight(null);hideTip();});
+  });
+  function highlight(slug){ Object.keys(paths).forEach(function(k){ paths[k].setAttribute("opacity",slug&&k!==slug?.18:1); }); }
+  var lg=document.getElementById("sl-legend"); clear(lg);
+  lg.appendChild(legendItem(function(sv){ S("line",{x1:1,x2:17,y1:7,y2:7,stroke:css("--violet"),"stroke-width":2.6},sv); },"our models"));
+  lg.appendChild(legendItem(function(sv){ S("line",{x1:1,x2:17,y1:7,y2:7,stroke:css("--teal"),"stroke-width":2.6},sv); },"Jev"));
+  lg.appendChild(legendItem(function(sv){ S("line",{x1:1,x2:17,y1:7,y2:7,stroke:muted,"stroke-opacity":.55,"stroke-width":1.6},sv); },"other decision models"));
+}
+function slopeText(){
+  var B=D.frontier.fig4b, rows=B.rows, by={}; rows.forEach(function(r){by[r.slug]=r;});
+  var best=rows.slice().sort(function(a,b){return b.L1-a.L1;})[0];
+  var sp=function(k){ var v=rows.map(function(r){return r[k];}); return Math.max.apply(null,v)-Math.min.apply(null,v); };
+  document.getElementById("sl-title").textContent="Isolated scores do not rank decision models for agents: "+sp("L1").toFixed(1)+" points separate them on isolated tool choice, "+sp("L3").toFixed(1)+" points on task success";
+  document.getElementById("sl-sub").textContent=best.name+" was the most accurate on isolated tool choice ("+f1(best.L1)+"%) but solved "+f1(best.L3)+"% of the shifted tasks. AgentDecision-4B solved "+f1(by.e12.L3)+"% and Jev "+f1(by.jev.L3)+"%. Step-level accuracy ranked the models nearly as task success did (Kendall correlation "+B.kendall_l2_l3.toFixed(2)+" over "+Math.round(B.kendall_l2_l3_n)+" models). Values in %. Under each level: the spread between the best and the worst model, in points.";
+  makeTable(document.getElementById("sl-table"),[
+    {key:"name",label:"Model",get:function(r){return r.name;}},
+    {key:"L1",label:"L1 BFCL tool choice (%)",get:function(r){return r.L1;},fmt:f1},
+    {key:"L2",label:"L2 shifted states (%)",get:function(r){return r.L2;},fmt:f1},
+    {key:"L3",label:"L3 shifted tasks (%)",get:function(r){return r.L3;},fmt:f1},
+    {key:"n",label:"Tasks run at L3",get:function(r){return r.L3_n||null;},fmt:function(v){return String(Math.round(v));}}
+  ],rows,{sortable:true,sortKey:"L3",dir:-1,rowClass:function(r){return r.group==="ours"?"ours":null;}});
+}
+
+/* ------------------------------------------------------------------ C. module map */
+var PT_LABEL={tool_select:["Tool choice","which tool"],tool_params:["Tool arguments","its arguments"],memory_write:["Memory write","what to store"],memory_read:["Memory read","what to read back"],reflection:["Reflection","re-check a step"],stop:["Stop","is the task done"],routing:["Routing","cheaper LLM"],action:["Action","text games"]};
+var MODE_LABEL={replace:["Replace","always decides"],cascade:["Cascade","decides when sure"],assist:["Assist","shortlists for the LLM"],guard:["Guard","checks the LLM's choice"],trigger:["Trigger","runs an optional step"]};
+var mmView="verdict";
+var ICONS={1:"M3 8.5 6.5 12 13 4.5",2:"M3.5 8h9",3:"M3.5 8h9",4:"M4 4l8 8M12 4l-8 8"};
+var VERDICT_TXT={1:"kept success, cheaper",2:"small loss",3:"no saving",4:"lost 3 or more points"};
+function renderModuleMap(){
+  var M=D.module_map, grid=document.getElementById("mm-grid"); clear(grid);
+  var cell={}; M.cells.forEach(function(c){cell[c.point+"/"+c.mode]=c;});
+  grid.appendChild(H("div",{class:"mh",style:"text-align:left",text:""}));
+  M.modes.forEach(function(md){ grid.appendChild(H("div",{class:"mh",role:"columnheader"},[MODE_LABEL[md][0],H("small",{text:MODE_LABEL[md][1]})])); });
+  M.points.forEach(function(pt){
+    grid.appendChild(H("div",{class:"rl",role:"rowheader"},[PT_LABEL[pt][0],H("small",{text:PT_LABEL[pt][1]})]));
+    M.modes.forEach(function(md){
+      var c=cell[pt+"/"+md];
+      var b=H("button",{type:"button",class:"mm-cell"+(mmView==="verdict"?" v"+c.vcode:""),role:"gridcell"});
+      if(mmView!=="verdict"){
+        var v=mmView==="delta"?c.delta_pt:c.saving_pct, lim=mmView==="delta"?10:100, t=clamp(v/lim,-1,1), p=Math.round(Math.abs(t)*70);
+        b.style.background="color-mix(in oklab, var("+(t>=0?"--pos":"--neg")+") "+p+"%, var(--mid))";
+        b.style.borderColor="transparent";
+      }
+      b.appendChild(H("span",{class:"d",text:sgn(c.delta_pt)}));
+      b.appendChild(H("span",{class:"s",text:pctS(c.saving_pct)}));
+      if(mmView==="verdict"){ var ic=S("svg",{class:"ic",viewBox:"0 0 16 16","aria-hidden":"true"}); S("path",{d:ICONS[c.vcode],fill:"none",stroke:c.vcode===1?css("--good-ink"):c.vcode===4?css("--bad-ink"):css("--ink-2"),"stroke-width":2.2,"stroke-linecap":"round","stroke-linejoin":"round"},ic); b.appendChild(ic); }
+      var label=PT_LABEL[pt][0]+" × "+MODE_LABEL[md][0]+": success "+sgn(c.delta_pt)+" points, cost saved "+pctS(c.saving_pct)+", "+VERDICT_TXT[c.vcode];
+      b.setAttribute("aria-label",label);
+      bindTip(b,function(e){ var rows=[{v:sgn(c.delta_pt)+" pt",k:"task success vs the LLM alone",color:"transparent"},{v:pctS(c.saving_pct),k:c.saving_pct<0?"cost saved (negative: costlier)":"cost saved",color:"transparent"}];
+        if(c.acted!==undefined) rows.push({v:f1(c.acted)+"%",k:"of opportunities where it acted",color:"transparent"});
+        if(c.n) rows.push({v:String(Math.round(c.n)),k:"tasks",color:"transparent"});
+        showTip(e,PT_LABEL[pt][0]+" × "+MODE_LABEL[md][0],rows,VERDICT_TXT[c.vcode].replace(/^./,function(s){return s.toUpperCase();})+". "+(c.state==="stage1"?"Stage 1 test.":"Later exploratory run.")+(c.same_as?" Behaves like "+c.same_as+".":"")+(pt==="action"?" Run on ALFWorld text games.":" Run on DecisionGym.")); });
+      grid.appendChild(b);
+    });
+  });
+  var lg=document.getElementById("mm-legend"); clear(lg);
+  if(mmView==="verdict"){
+    [[1,"--good","kept success, cheaper"],[3,"--warn","small loss or no saving"],[4,"--bad","lost 3 or more points"]].forEach(function(v){
+      var it=H("span",{class:"it"}); var sw=H("span",{class:"sw",style:"background:color-mix(in oklab, var("+v[1]+") 30%, var(--surface)); border:1px solid color-mix(in oklab, var("+v[1]+") 50%, var(--line))"}); it.appendChild(sw); it.appendChild(document.createTextNode(v[2])); lg.appendChild(it); });
+    lg.appendChild(H("span",{class:"it",style:"color:var(--muted)",text:"Top: success change (points). Bottom: cost saved (%)."}));
+  } else {
+    var lim=mmView==="delta"?10:100, unit=mmView==="delta"?" pt":"%";
+    var sc=H("span",{class:"scale"}); sc.appendChild(document.createTextNode(MINUS+lim+unit+" or less"));
+    sc.appendChild(H("i",{style:"background:linear-gradient(90deg, color-mix(in oklab, var(--neg) 70%, var(--mid)), var(--mid), color-mix(in oklab, var(--pos) 70%, var(--mid)))"}));
+    sc.appendChild(document.createTextNode("+"+lim+unit+" or more")); lg.appendChild(sc);
+    lg.appendChild(H("span",{class:"it",style:"color:var(--muted)",text:mmView==="delta"?"Colour: task success against the LLM alone.":"Colour: share of the LLM cost saved. Negative means costlier."}));
+  }
+}
+function moduleMapText(){
+  var M=D.module_map, n=M.cells.length, g=M.cells.filter(function(c){return c.vcode===1;}), bad=M.cells.filter(function(c){return c.vcode===4;}), nos=M.cells.filter(function(c){return c.saving_pct<=0;});
+  var ex=g.map(function(c){return PT_LABEL[c.point][0].toLowerCase()+" × "+MODE_LABEL[c.mode][0].toLowerCase();});
+  document.getElementById("mm-sub").textContent="Each cell runs Jev at one decision point in one mode, with Gemini 3.5 Flash as the agent LLM, against the LLM alone. "+g.length+" of "+n+" cells kept success and saved cost ("+ex.join(", ")+"). "+bad.length+" lost 3 or more points, and "+nos.length+" saved no cost. The action row comes from ALFWorld text games, the other rows from DecisionGym.";
+  makeTable(document.getElementById("mm-table"),[
+    {key:"p",label:"Decision point",get:function(c){return PT_LABEL[c.point][0];}},
+    {key:"m",label:"Mode",get:function(c){return MODE_LABEL[c.mode][0];}},
+    {key:"d",label:"Success change (pt)",get:function(c){return c.delta_pt;},fmt:function(v){return sgn(v);}},
+    {key:"s",label:"Cost saved (%)",get:function(c){return c.saving_pct;},fmt:function(v){return pctS(v).replace("%","");}},
+    {key:"n",label:"Tasks",get:function(c){return c.n||null;},fmt:function(v){return String(Math.round(v));}},
+    {key:"v",label:"Outcome",get:function(c){return VERDICT_TXT[c.vcode];}},
+    {key:"st",label:"Run",get:function(c){return c.state==="stage1"?"Stage 1":"exploratory";}}
+  ],M.cells,{});
+  document.getElementById("mm-link").href=M.link;
+}
+
+/* ------------------------------------------------------------------ D. harder settings (Table 1) */
+function renderHard(){
+  var host=document.getElementById("hs-chart"); clear(host);
+  var R=D.hard_settings.rows, surf=css("--surface"), grid=css("--grid"), axis=css("--axis"), ink2=css("--ink-2");
+  var cRef=css("--amber"), cWith=css("--violet");
+  var lg=document.getElementById("hs-legend"); clear(lg);
+  lg.appendChild(legendItem(function(sv){ S("circle",{cx:9,cy:7,r:5,fill:cRef,stroke:surf,"stroke-width":1.5},sv); },"the LLM alone"));
+  lg.appendChild(legendItem(function(sv){ S("circle",{cx:9,cy:7,r:5,fill:cWith,stroke:surf,"stroke-width":1.5},sv); },"with the delegation"));
+  lg.appendChild(legendItem(function(sv){ S("rect",{x:2,y:3,width:14,height:8,rx:2,fill:css("--pos")},sv); },"cost saved"));
+  lg.appendChild(legendItem(function(sv){ S("rect",{x:2,y:3,width:14,height:8,rx:2,fill:css("--neg")},sv); },"costlier"));
+  var hdr=H("div",{class:"st-row hdr"});
+  hdr.appendChild(H("div",{class:"lab colh",text:"Setting"}));
+  var hS=H("div",{class:"cell"},[H("div",{class:"colh"},["Task success (%)"])]); var hSv=S("svg",{height:16}); hS.appendChild(hSv); hdr.appendChild(hS);
+  var hC=H("div",{class:"cell"},[H("div",{class:"colh"},["Cost saved (%)"])]); var hCv=S("svg",{height:16}); hC.appendChild(hCv); hdr.appendChild(hC);
+  hdr.appendChild(H("div",{class:"colh time"},["Time per task",H("small",{text:"LLM alone → with"})]));
+  host.appendChild(hdr);
+  var ws=hS.getBoundingClientRect().width||200, wc=hC.getBoundingClientRect().width||160;
+  var xs=lin(40,100,6,ws-6), xc=lin(-25,100,6,wc-6);
+  hSv.setAttribute("viewBox","0 0 "+ws+" 16"); hSv.setAttribute("width",ws);
+  ticks(hSv,[40,60,80,100],xs);
+  hCv.setAttribute("viewBox","0 0 "+wc+" 16"); hCv.setAttribute("width",wc);
+  [0,50,100].forEach(function(t,i){ T(hCv,xc(t),12,String(t),{"text-anchor":i===2?"end":"middle",class:"ax-t"}); });
+  var band=null;
+  R.forEach(function(r){
+    if(r.band!==band){ band=r.band; host.appendChild(H("div",{class:"st-band",text:band})); }
+    var row=H("div",{class:"st-row",tabindex:"0"});
+    var who=r.who==="ours"?"4B trained on the agent's states":"Jev";
+    var lab=H("div",{class:"lab"},[r.label]);
+    if(r.delta_pt<=-3){ var fl=H("span",{class:"flag bad"}); var fs=S("svg",{viewBox:"0 0 16 16","aria-hidden":"true"}); S("path",{d:ICONS[4],stroke:"currentColor","stroke-width":2.4,fill:"none","stroke-linecap":"round"},fs); fl.appendChild(fs); fl.appendChild(document.createTextNode("lost "+Math.abs(r.delta_pt).toFixed(1)+" pt")); lab.appendChild(fl); }
+    lab.appendChild(H("span",{class:"who"+(r.who==="ours"?" ours":""),text:who+" · "+Math.round(r.n)+" tasks"}));
+    row.appendChild(lab);
+    // success dumbbell
+    var c1=H("div",{class:"cell"}); var sv=S("svg",{viewBox:"0 0 "+ws+" 22",width:ws,height:22,"aria-hidden":"true"}); c1.appendChild(sv);
+    [40,60,80,100].forEach(function(t){ S("line",{x1:xs(t),x2:xs(t),y1:3,y2:19,stroke:grid},sv); });
+    S("line",{x1:xs(r.ref_success),x2:xs(r.with_success),y1:11,y2:11,stroke:ink2,"stroke-opacity":.45,"stroke-width":2.5,"stroke-linecap":"round"},sv);
+    S("circle",{cx:xs(r.ref_success),cy:11,r:5,fill:cRef,stroke:surf,"stroke-width":1.5},sv);
+    S("circle",{cx:xs(r.with_success),cy:11,r:5.5,fill:cWith,stroke:surf,"stroke-width":1.5},sv);
+    var t1=H("div",{class:"t"},[f1(r.ref_success)+" → ",H("b",{text:f1(r.with_success)}),"  ("+sgn(r.delta_pt)+" pt)"]); c1.appendChild(t1); row.appendChild(c1);
+    // cost bar
+    var c2=H("div",{class:"cell"}); var sv2=S("svg",{viewBox:"0 0 "+wc+" 22",width:wc,height:22,"aria-hidden":"true"}); c2.appendChild(sv2);
+    var sv0=xc(0), sav=r.saving_pct, over=sav<-25, xe=xc(clamp(sav,-25,100));
+    S("rect",{x:Math.min(sv0,xe),y:5,width:Math.max(2,Math.abs(xe-sv0)),height:12,rx:3,fill:sav>=0?css("--pos"):css("--neg")},sv2);
+    if(over){ S("path",{d:"M"+(xe+3)+" 3 L"+(xe+7)+" 19 M"+(xe+8)+" 3 L"+(xe+12)+" 19",stroke:surf,"stroke-width":2},sv2); }
+    S("line",{x1:sv0,x2:sv0,y1:1,y2:21,stroke:axis},sv2);
+    var costTxt=r.cost_multiple?(r.cost_multiple.toFixed(1)+"× the cost"):(Math.abs(sav)<0.05?"0%":(sav>0?"":MINUS)+Math.abs(sav).toFixed(1)+"% saved");
+    if(r.cost_multiple) costTxt=r.cost_multiple.toFixed(1)+"× the LLM's cost";
+    c2.appendChild(H("div",{class:"t"},[sav>=0?H("b",{text:f1(sav)+"%"}):H("b",{text:costTxt}),sav>=0?" saved":""])); row.appendChild(c2);
+    var dt=(r.with_time_s/r.ref_time_s-1)*100;
+    var tf=(Number.isInteger(r.ref_time_s)&&Number.isInteger(r.with_time_s))?function(v){return String(v);}:function(v){return v.toFixed(1);};
+    row.appendChild(H("div",{class:"cell time"},[H("div",{class:"t"},[tf(r.ref_time_s)+" → ",H("b",{text:tf(r.with_time_s)+" s"})]),H("div",{class:"t",style:"color:var(--muted)",text:Math.abs(Math.round(dt))+"% "+(dt<=0?"faster":"slower")})]));
+    bindTip(row,function(e){ showTip(e,r.label,[{v:f1(r.ref_success)+"%",k:"success, the LLM alone",color:cRef},{v:f1(r.with_success)+"%",k:"success with the delegation",color:cWith},{v:r.cost_multiple?(r.cost_multiple.toFixed(1)+"×"):(f1(sav)+"%"),k:r.cost_multiple?"cost against the LLM alone":"of the cost saved",color:"transparent"},{v:tf(r.ref_time_s)+" → "+tf(r.with_time_s)+" s",k:"time per task",color:"transparent"}],r.band+". Decision model: "+who+". "+Math.round(r.n)+" tasks."); });
+    host.appendChild(row);
+  });
+}
+function hardText(){
+  var R=D.hard_settings.rows;
+  var kept=R.filter(function(r){return r.delta_pt>-3;}).length;
+  var ours=R.filter(function(r){return r.who==="ours";}), os=ours.map(function(r){return r.saving_pct;});
+  var cs=R.filter(function(r){return /^Coding/.test(r.band);}).map(function(r){return r.saving_pct;});
+  var codeRange=f1(Math.min.apply(null,cs))+"–"+f1(Math.max.apply(null,cs))+"%";
+  document.getElementById("hs-title").textContent="Delegation kept success within 3 points in "+kept+" of "+R.length+" harder settings. The largest savings, "+rangeTxt(Math.min.apply(null,os),Math.max.apply(null,os))+"%, came from a 4B model trained on the agent's own states";
+  document.getElementById("hs-sub").textContent="Task success of the LLM alone and with the delegation on the same tasks, the share of the cost saved, and the mean time per task. Hard DecisionGym tasks add a business rule that no decision model was trained on. In the coding agents, where an LLM still wrote every step, the savings were "+codeRange+".";
+  makeTable(document.getElementById("hs-table"),[
+    {key:"b",label:"Setting",get:function(r){return r.band+": "+r.label;}},
+    {key:"n",label:"Tasks",get:function(r){return r.n;},fmt:function(v){return String(Math.round(v));}},
+    {key:"rs",label:"Success, LLM alone (%)",get:function(r){return r.ref_success;},fmt:f1},
+    {key:"ws",label:"Success, with (%)",get:function(r){return r.with_success;},fmt:f1},
+    {key:"d",label:"Change (pt)",get:function(r){return r.delta_pt;},fmt:function(v){return sgn(v);}},
+    {key:"s",label:"Cost saved (%)",get:function(r){return r.saving_pct;},fmt:function(v){return f1(v);}},
+    {key:"rt",label:"Time, LLM alone (s)",get:function(r){return r.ref_time_s;},fmt:f1},
+    {key:"wt",label:"Time, with (s)",get:function(r){return r.with_time_s;},fmt:f1}
+  ],R,{});
+  document.getElementById("hs-link").href=D.hard_settings.link;
+}
+
+/* ------------------------------------------------------------------ E. Terminal-Bench 2.0 */
+var MODEL_NAME={"gemini-4-argon":"Gemini 4 Argon","gemini-3.5-flash-lite":"Gemini 3.5 Flash-Lite","gemini-3.8-flash":"Gemini 3.8 Flash","gpt-6.1-sol":"GPT-6.1 Sol","gpt-6-luna":"GPT-6 Luna"};
+var HARNESS={mswe:"mini-swe-agent",pi:"pi",dsh:"DeepSeek Harness",t2:"Terminus-2",codex:"Codex"};
+var H_ORDER=["mswe","pi","dsh","t2","codex"];
+var tbSet="flash_lite";
+function mn(id){ return MODEL_NAME[id]||id; }
+function tbRows(s){
+  var out=[];
+  H_ORDER.forEach(function(h){
+    var keys=Object.keys(s.results).filter(function(k){return k.split(":")[0]===h;});
+    if(!keys.length) return;
+    var base=s.results[h+":jah-strong"], routed=null;
+    keys.forEach(function(k){ if(k!==h+":jah-strong") routed=s.results[k]; });
+    if(base&&routed) out.push({h:h,base:base,r:routed});
+  });
+  return out;
+}
+function renderTB(){
+  var s=D.tb2.settings.filter(function(x){return x.id===tbSet;})[0];
+  var host=document.getElementById("tb-chart"); clear(host);
+  var rows=tbRows(s), surf=css("--surface"), grid=css("--grid"), ink2=css("--ink-2"), axis=css("--axis");
+  var cRef=css("--amber"), cWith=css("--violet");
+  var lg=document.getElementById("tb-legend"); clear(lg);
+  lg.appendChild(legendItem(function(sv){ S("circle",{cx:9,cy:7,r:5,fill:cRef,stroke:surf,"stroke-width":1.5},sv); },"strong model only ("+mn(s.strong)+")"));
+  lg.appendChild(legendItem(function(sv){ S("circle",{cx:9,cy:7,r:5,fill:cWith,stroke:surf,"stroke-width":1.5},sv); },"routed by JevAgentHarness ("+mn(s.strong)+" or "+mn(s.fast)+")"));
+  var panels=[
+    {k:"success",t:"Task success",u:"% of tasks",get:function(x){return x.success*100;},dom:[0,100],ticks:[0,50,100],fmt:function(v){return f1(v)+"%";},chg:function(b,r){return sgn(r.delta_pt)+" pt";}},
+    {k:"cost",t:"LLM cost per task",u:"US$",get:function(x){return x.cost_per_task;},dom:[0,1],ticks:[0,0.5,1],fmt:function(v){return "$"+v.toFixed(2);},chg:function(b,r){return (r.cost_saving>=0?MINUS:"+")+Math.abs(Math.round(r.cost_saving*100))+"%";}},
+    {k:"time",t:"Time per task",u:"minutes",get:function(x){return x.agent_s_per_task/60;},dom:[0,25],ticks:[0,10,20],fmt:function(v){return v.toFixed(1)+" min";},chg:function(b,r){return (r.time_saving>=0?MINUS:"+")+Math.abs(Math.round(r.time_saving*100))+"%";}}
+  ];
+  // panel headers
+  host.appendChild(H("div",{class:"ph ph-empty"}));
+  var axes=[];
+  panels.forEach(function(p){ var d=H("div",{class:"ph"},[p.t,H("small",{text:p.u})]); var sv=S("svg",{height:16}); d.appendChild(sv); host.appendChild(d); axes.push({el:d,sv:sv}); });
+  var widths=axes.map(function(a){return a.el.getBoundingClientRect().width||200;});
+  var mobile=window.matchMedia("(max-width: 720px)").matches;
+  panels.forEach(function(p,i){ var w=widths[i]||200; if(mobile) w=host.getBoundingClientRect().width; p.x=lin(p.dom[0],p.dom[1],6,w-10); p.w=w;
+    var sv=axes[i].sv; sv.setAttribute("viewBox","0 0 "+w+" 16"); sv.setAttribute("width",w); ticks(sv,p.ticks,p.x,function(t){return p.k==="cost"?"$"+t:String(t);}); });
+  rows.forEach(function(row){
+    var inc=row.h==="t2";
+    var hn=H("div",{class:"hn"},[HARNESS[row.h]]);
+    if(inc) hn.appendChild(H("span",{class:"flag inc",text:"inconclusive"}));
+    hn.appendChild(H("small",{text:Math.round(row.r.paired_n||row.r.n)+" tasks · "+Math.round(row.r.strong_share*100)+"% of routed steps on the strong model"}));
+    host.appendChild(hn);
+    panels.forEach(function(p){
+      var c=H("div",{class:"cell",tabindex:"0"}); c.appendChild(H("span",{class:"lbl-m",text:p.t+" ("+p.u+")"}));
+      var sv=S("svg",{viewBox:"0 0 "+p.w+" 22",width:p.w,height:22,"aria-hidden":"true"}); c.appendChild(sv);
+      p.ticks.forEach(function(t){ S("line",{x1:p.x(t),x2:p.x(t),y1:3,y2:19,stroke:t===0?axis:grid},sv); });
+      var a=p.get(row.base), b=p.get(row.r);
+      S("line",{x1:p.x(Math.min(a,p.dom[1])),x2:p.x(Math.min(b,p.dom[1])),y1:11,y2:11,stroke:ink2,"stroke-opacity":.45,"stroke-width":2.5,"stroke-linecap":"round"},sv);
+      S("circle",{cx:p.x(Math.min(a,p.dom[1])),cy:11,r:5,fill:cRef,stroke:surf,"stroke-width":1.5,opacity:inc?.6:1},sv);
+      S("circle",{cx:p.x(Math.min(b,p.dom[1])),cy:11,r:5.5,fill:cWith,stroke:surf,"stroke-width":1.5,opacity:inc?.6:1},sv);
+      c.appendChild(H("div",{class:"t"},[p.fmt(a)+" → ",H("b",{text:p.fmt(b)}),"  ("+p.chg(row.base,row.r)+")"]));
+      bindTip(c,function(e){ var rr=[{v:p.fmt(a),k:"strong model only",color:cRef},{v:p.fmt(b),k:"routed",color:cWith}];
+        if(p.k==="success") rr.push({v:"["+sgn(row.r.delta_ci_pt[0])+", "+sgn(row.r.delta_ci_pt[1])+"]",k:"95% interval of the change (pt)",color:"transparent"},{v:row.r.wins+" / "+row.r.losses,k:"tasks won / lost by routing",color:"transparent"});
+        showTip(e,HARNESS[row.h]+": "+p.t.toLowerCase(),rr,Math.round(row.r.n)+" tasks, one run each."); });
+      host.appendChild(c);
+    });
+  });
+  var note=document.getElementById("tb-note"); clear(note);
+  var t2=rows.filter(function(r){return r.h==="t2";})[0];
+  if(t2){ note.appendChild(H("b",{text:"Terminus-2 is inconclusive. "})); note.appendChild(document.createTextNode("It talks to the model in plain JSON, so the final-answer check does not apply, and "+t2.base.timeouts+" of "+t2.base.n+" tasks on the strong model alone hit the agent timeout, which also makes that baseline look cheap.")); }
+  else note.appendChild(document.createTextNode("Codex ran on the first "+rows[0].r.n+" tasks of the test split to keep the OpenAI spend small."));
+}
+function tbText(){
+  var s=D.tb2.settings.filter(function(x){return x.id===tbSet;})[0], rows=tbRows(s).filter(function(r){return r.h!=="t2";});
+  var d=rows.map(function(r){return r.r.delta_pt;}), c=rows.map(function(r){return r.r.cost_saving*100;}), t=rows.map(function(r){return r.r.time_saving*100;});
+  var mn_=function(a){return Math.min.apply(null,a);}, mx=function(a){return Math.max.apply(null,a);};
+  var who=rows.length>1?(rows.length===3?"Three":String(rows.length))+" unmodified harnesses":HARNESS[rows[0].h];
+  var succ=mn_(d)>=0?(rows.length>1?"kept or raised their success":"kept its success"):(mn_(d)>-3?(rows.length>1?"stayed within 3 points of their success":"stayed within 3 points of its success"):"lost success in some runs");
+  var cost=rows.length>1?" and spent "+rangeTxt(mn_(c),mx(c))+"% less on LLM calls":", spent "+c[0].toFixed(1)+"% less on LLM calls";
+  var time=mn_(t)>0?(rows.length>1?", finishing "+rangeTxt(mn_(t),mx(t))+"% faster":" and finished "+Math.round(t[0])+"% faster"):(mx(t)<0?(rows.length>1?", but took longer":" and took "+Math.abs(Math.round(t[0]))+"% longer"):"");
+  document.getElementById("tb-title").textContent=who+" "+succ+cost+time+".";
+  var setTxt="Strong model "+mn(s.strong)+" ("+s.strong_effort+" thinking), fast model "+mn(s.fast)+" ("+s.fast_effort+" thinking), decision model Jev, threshold τ = "+s.tau+". ";
+  document.getElementById("tb-sub").textContent=setTxt+"Each harness is compared with the same harness on the strong model alone, on the held-out test split. Cost is the LLM bill logged by the proxy, decision-model calls included. With this many tasks the intervals are wide, so read the success column as no detectable loss.";
+  makeTable(document.getElementById("tb-table"),[
+    {key:"a",label:"Harness and arm",get:function(x){return x.k;}},
+    {key:"n",label:"Tasks",get:function(x){return x.v.n;}},
+    {key:"s",label:"Success (%)",get:function(x){return x.v.success*100;},fmt:f1},
+    {key:"d",label:"Change (pt)",get:function(x){return x.v.delta_pt===undefined?null:x.v.delta_pt;},fmt:function(v){return sgn(v);}},
+    {key:"c",label:"$ per task",get:function(x){return x.v.cost_per_task;},fmt:function(v){return v.toFixed(3);}},
+    {key:"cs",label:"Cost saving (%)",get:function(x){return x.v.cost_saving===undefined?null:x.v.cost_saving*100;},fmt:f1},
+    {key:"t",label:"Agent s per task",get:function(x){return x.v.agent_s_per_task;},fmt:function(v){return String(Math.round(v));}},
+    {key:"ts",label:"Time saving (%)",get:function(x){return x.v.time_saving===undefined?null:x.v.time_saving*100;},fmt:f1},
+    {key:"ss",label:"Strong share (%)",get:function(x){return x.v.strong_share*100;},fmt:f1},
+    {key:"to",label:"Timeouts",get:function(x){return x.v.timeouts;}}
+  ],Object.keys(s.results).map(function(k){return {k:k,v:s.results[k]};}),{});
+  var tl=document.getElementById("tb-link"); tl.href=D.tb2.links.repo+s.results_file; tl.textContent=s.results_file;
+}
+function initTBSeg(){
+  var g=document.getElementById("tb-set"); clear(g);
+  D.tb2.settings.forEach(function(s,i){
+    var label=s.id==="codex_openai"?("Codex: "+mn(s.strong)+" + "+mn(s.fast)):(mn(s.strong).replace("Gemini ","")+" + "+mn(s.fast).replace("Gemini ",""));
+    g.appendChild(H("button",{type:"button","data-v":s.id,"aria-pressed":s.id===tbSet?"true":"false",text:label}));
+  });
+  seg("tb-set",function(v){ tbSet=v; tbText(); renderTB(); });
+}
+
+/* ------------------------------------------------------------------ E2. dev modes */
+var ARM_LABEL={"jah-auto-t75":"Default (README setting)","jah-shadow":"Default, other points in shadow","jah-safe":"Action guard","jah-submit":"Finish check on submit","jah-reflect":"Reflection trigger","jah-routeguard":"Routing guard instead of cascade","jah-stopguard":"Stop guard instead of finish check"};
+function renderDev(){
+  var dv=D.dev_modes, host=document.getElementById("dv-chart"); clear(host);
+  var surf=css("--surface"), grid=css("--grid"), axis=css("--axis"), muted=css("--muted"), cA=css("--violet");
+  var arms=Object.keys(dv.arms).map(function(k){ var p=k.split(" "); var hs=p[0].split(":"); return {key:k,h:hs[0],arm:hs[1],phase:p[1],v:dv.arms[k]}; });
+  var ref=function(a){return a.arm==="jah-shadow"||a.arm==="jah-auto-t75";};
+  var lg=document.getElementById("dv-legend"); clear(lg);
+  lg.appendChild(legendItem(function(sv){ S("circle",{cx:9,cy:7,r:5,fill:surf,stroke:muted,"stroke-width":2},sv); },"reference arm (default router)"));
+  lg.appendChild(legendItem(function(sv){ S("circle",{cx:9,cy:7,r:5.5,fill:cA,stroke:surf,"stroke-width":1.5},sv); },"arm with a decision-point mode"));
+  host.appendChild(H("div",{class:"dh-name"}));
+  var h1=H("div",{class:"ph"},["Task success",H("small",{text:"share of the "+arms[0].v.n+" tasks solved"})]), h2=H("div",{class:"ph"},["LLM cost per task",H("small",{text:"US$"})]);
+  var s1=S("svg",{height:16}), s2=S("svg",{height:16}); h1.appendChild(s1); h2.appendChild(s2); host.appendChild(h1); host.appendChild(h2);
+  var mobile=window.matchMedia("(max-width: 720px)").matches;
+  var full=host.getBoundingClientRect().width||320;
+  var w1=(mobile?full-60:(h1.getBoundingClientRect().width||200))-94, w2=(mobile?full-60:(h2.getBoundingClientRect().width||200))-94;
+  w1=Math.max(60,w1); w2=Math.max(60,w2);
+  var maxC=Math.max.apply(null,arms.map(function(a){return a.v.cost_per_task;}));
+  var dc=Math.ceil(maxC*10)/10;
+  var x1=lin(0,100,6,w1-6), x2=lin(0,dc,6,w2-6);
+  s1.setAttribute("viewBox","0 0 "+w1+" 16"); s1.setAttribute("width",w1); ticks(s1,[0,50,100],x1,function(t){return t+"%";});
+  s2.setAttribute("viewBox","0 0 "+w2+" 16"); s2.setAttribute("width",w2); ticks(s2,[0,dc/2,dc],x2,function(t){return "$"+(+t.toFixed(2));});
+  ["mswe","pi"].forEach(function(h){
+    host.appendChild(H("div",{class:"grp",text:HARNESS[h]}));
+    arms.filter(function(a){return a.h===h;}).sort(function(a,b){ return (ref(b)-ref(a))||a.phase.localeCompare(b.phase); }).forEach(function(a){
+      var isRef=ref(a);
+      host.appendChild(H("div",{class:"an"+(isRef?" ref":"")},[ARM_LABEL[a.arm]||a.arm,H("small",{text:a.phase})]));
+      [[x1,a.v.success*100,w1,[0,50,100],Math.round(a.v.success*a.v.n)+"/"+a.v.n+" solved","success"],[x2,a.v.cost_per_task,w2,[0,dc/2,dc],"$"+a.v.cost_per_task.toFixed(2),"cost"]].forEach(function(spec){
+        var c=H("div",{class:"cell",tabindex:"0"}); c.appendChild(H("span",{class:"lbl-m",text:spec[5]}));
+        var sv=S("svg",{viewBox:"0 0 "+spec[2]+" 22",width:spec[2],height:22,"aria-hidden":"true"}); c.appendChild(sv);
+        spec[3].forEach(function(t){ S("line",{x1:spec[0](t),x2:spec[0](t),y1:3,y2:19,stroke:t===0?axis:grid},sv); });
+        if(isRef) S("circle",{cx:spec[0](spec[1]),cy:11,r:5,fill:surf,stroke:muted,"stroke-width":2},sv);
+        else S("circle",{cx:spec[0](spec[1]),cy:11,r:5.5,fill:cA,stroke:surf,"stroke-width":1.5},sv);
+        c.appendChild(H("div",{class:"t",text:spec[4]}));
+        bindTip(c,function(e){ showTip(e,HARNESS[h]+": "+(ARM_LABEL[a.arm]||a.arm)+" ("+a.phase+")",[{v:Math.round(a.v.success*a.v.n)+"/"+a.v.n,k:"tasks solved",color:"transparent"},{v:"$"+a.v.cost_per_task.toFixed(3),k:"LLM cost per task",color:"transparent"},{v:Math.round(a.v.agent_s_per_task)+" s",k:"agent time per task",color:"transparent"},{v:f1(a.v.strong_share*100)+"%",k:"steps on the strong model",color:"transparent"}],"Development split, one trial per task."); });
+        host.appendChild(c);
+      });
+    });
+  });
+}
+function devText(){
+  var dv=D.dev_modes, any=dv.arms[Object.keys(dv.arms)[0]];
+  document.getElementById("dv-title").textContent="No mode clearly beat the default router on the "+any.n+" development tasks";
+  document.getElementById("dv-sub").textContent="Each arm adds one decision-point mode to the default router (Gemini 4 Argon or Gemini 3.5 Flash-Lite, Jev deciding). Phases P1 to P3 ran at different times, so compare an arm with the reference arm of its own phase. The reflection trigger kept the default's cost and was ahead in each of its samples, too few tasks to call.";
+  var cb=document.getElementById("dv-callout"); clear(cb); cb.appendChild(H("b",{text:"Development split, "+any.n+" tasks, one trial per arm. "})); cb.appendChild(document.createTextNode("These runs were used to choose settings for the modes. They are not a result, and the test split was not used."));
+  var rows=Object.keys(dv.arms).map(function(k){return {k:k,v:dv.arms[k]};});
+  makeTable(document.getElementById("dv-table"),[
+    {key:"a",label:"Harness, arm, phase",get:function(x){return x.k;}},
+    {key:"s",label:"Solved",get:function(x){return Math.round(x.v.success*x.v.n)+"/"+x.v.n;}},
+    {key:"c",label:"$ per task",get:function(x){return x.v.cost_per_task;},fmt:function(v){return v.toFixed(3);}},
+    {key:"t",label:"Agent s per task",get:function(x){return x.v.agent_s_per_task;},fmt:function(v){return String(Math.round(v));}},
+    {key:"ss",label:"Strong share (%)",get:function(x){return x.v.strong_share*100;},fmt:f1},
+    {key:"st",label:"Steps per task",get:function(x){return x.v.steps_per_task;},fmt:f1},
+    {key:"dc",label:"Decision calls per task",get:function(x){return x.v.decision_calls_per_task;},fmt:f1}
+  ],rows,{});
+}
+
+/* ------------------------------------------------------------------ boot */
+loadData().then(function(data){
+  D=data; D.lbModels=buildLB(D.leaderboard);
+  renderKPIs();
+  frontierText(); slopeText(); moduleMapText(); hardText(); initTBSeg(); tbText(); devText();
+  renderLBTable("all");
+  seg("lbt-kind",function(v){ renderLBTable(v); });
+  seg("lb-set",function(v){ lbState.set=v; renderLeaderboard(); });
+  document.querySelectorAll("#leaderboard .tog").forEach(function(b){ b.addEventListener("click",function(){ var k=b.getAttribute("data-k"); lbState.show[k]=!lbState.show[k]; b.setAttribute("aria-pressed",lbState.show[k]?"true":"false"); renderLeaderboard(); }); });
+  seg("mm-view",function(v){ mmView=v; renderModuleMap(); });
+  renderers=[renderLeaderboard,renderFrontier,renderSlope,renderModuleMap,renderHard,renderTB,renderDev];
+  rerenderAll();
+  [["lb-chart",renderLeaderboard],["fr-chart",renderFrontier],["sl-chart",renderSlope],["hs-chart",renderHard],["tb-chart",renderTB],["dv-chart",renderDev]].forEach(function(p){ onResize(document.getElementById(p[0]),p[1]); });
+  if(document.fonts&&document.fonts.ready) document.fonts.ready.then(rerenderAll);
+}).catch(function(err){
+  console.error(err);
+  ["lb-chart","fr-chart","sl-chart","hs-chart","tb-chart","dv-chart"].forEach(function(id){ var el=document.getElementById(id); if(el) el.appendChild(H("p",{class:"note",text:"The chart data could not be loaded. Open the page through a web server, or read the files in the data/ folder."})); });
+});
+})();
+</script>
+</body>
+</html>
