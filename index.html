@@ -469,10 +469,12 @@ footer .fine{flex-basis:100%; font-size:12.5px; color:var(--muted)}
       </p>
       <p class="affil rise"><span><sup>1</sup>University of Illinois Urbana-Champaign</span><span><sup>2</sup>Princeton University</span><span><sup>3</sup>Google</span></p>
       <div class="btns rise">
-        <a class="btn primary" href="https://github.com/JevAgentHarness/JevAgentHarness/blob/main/paper/JevAgentHarness.pdf">
+        <a class="btn primary" href="https://arxiv.org/pdf/2610.21412">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></svg>Paper</a>
-        <span class="btn" aria-disabled="true" title="The arXiv version is coming soon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 19 12 5l7 14M8.2 13h7.6"/></svg>arXiv <span class="soon">soon</span></span>
+        <a class="btn" href="https://arxiv.org/abs/2610.21412">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 19 12 5l7 14M8.2 13h7.6"/></svg>arXiv</a>
+        <a class="btn" href="https://huggingface.co/papers/2610.21412">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M8.5 14.5c1 1.3 2.1 2 3.5 2s2.5-.7 3.5-2M9 10h.01M15 10h.01"/></svg>HF Paper</a>
         <a class="btn" href="https://github.com/JevAgentHarness/JevAgentHarness">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m8 7-5 5 5 5M16 7l5 5-5 5M13.5 4l-3 16"/></svg>Code</a>
         <a class="btn" href="https://huggingface.co/JevAgentHarness">
@@ -867,11 +869,14 @@ jah fit ~/.jah/logs               <span class="c"># fit each point's threshold o
 <section id="citation">
   <div class="wrap">
     <div class="sec-head"><span class="eyebrow">Citation</span><h2>Cite this work</h2></div>
-    <div class="code"><button class="copy" type="button">Copy</button><pre><code>@article{zhu2026jevagentharness,
-  title   = {JevAgentHarness: Benchmarking, Deploying and Training Decision Models That Share Control with LLMs},
-  author  = {Zhu, Kunlun and Feng, Tao and Han, Xu and Wang, Heng and Yang, Ling and Tang, Xiangru and You, Jiaxuan and Ji, Heng},
-  journal = {arXiv preprint},
-  year    = {2026}
+    <div class="code"><button class="copy" type="button">Copy</button><pre><code>@misc{zhu2026jevagentharnessbenchmarkingdeployingtraining,
+      title={JevAgentHarness: Benchmarking, Deploying and Training Decision Models That Share Control with LLMs},
+      author={Kunlun Zhu and Tao Feng and Xu Han and Heng Wang and Ling Yang and Xiangru Tang and Jiaxuan You and Heng Ji},
+      year={2026},
+      eprint={2610.21412},
+      archivePrefix={arXiv},
+      primaryClass={cs.AI},
+      url={https://arxiv.org/abs/2610.21412},
 }</code></pre></div>
   </div>
 </section>
